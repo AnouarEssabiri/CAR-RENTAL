@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 const Payment = () => {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -81,12 +83,12 @@ const Payment = () => {
                   </div>
   
                   <div className="border-t pt-6">
-                    <button
+                    <Link to="/order"
                       type="submit"
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-6 rounded-xl transition-all transform hover:scale-[1.02]"
+                      className="w-full bg-blue-600 text-center hover:bg-blue-700 text-white font-semibold py-4 px-6 rounded-xl transition-all transform hover:scale-[1.02]"
                     >
                       Pay $1,938.50
-                    </button>
+                    </Link>
                   </div>
                 </form>
               </div>

@@ -1,6 +1,9 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import Header from "../components/layout/Header";
 
 const Home = () => {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useState({
     location: "",
     pickupDate: "",
@@ -63,41 +66,7 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navigation */}
-      <nav className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <div className="flex-shrink-0">
-              <h1 className="text-2xl font-bold text-blue-600">LuxuryCars</h1>
-            </div>
-            <div className="hidden md:block">
-              <div className="flex items-center space-x-8">
-                <a href="#" className="text-gray-700 hover:text-blue-600">
-                  Home
-                </a>
-                <a href="#" className="text-gray-700 hover:text-blue-600">
-                  Cars
-                </a>
-                <a href="#" className="text-gray-700 hover:text-blue-600">
-                  About
-                </a>
-                <a href="#" className="text-gray-700 hover:text-blue-600">
-                  Contact
-                </a>
-                <div className="flex items-center space-x-4">
-                  <button className="bg-blue-600 text-white px-4 py-2 rounded-sm  hover:bg-blue-700">
-                    Sign In
-                  </button>
-                  <button className="white-blue-600 text-blue-600 border-1 px-4 py-2 border-blue-600  hover:bg-white-700">
-                    Sign Up
-                  </button>
-                </div>
-                
-              </div>
-            </div>
-          </div>
-        </div>
-      </nav>
-
+      <Header />
       {/* Hero Section */}
       <div className="relative h-[600px] mb-12">
         <div className="absolute inset-0">
@@ -308,10 +277,10 @@ const Home = () => {
                 </div>
 
                 <div className="flex space-x-2">
-                  <button className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                  <button onClick={() => navigate("payment")}  className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors">
                     Book Now
                   </button>
-                  <button className="flex-1 bg-gray-100 text-gray-800 py-2 rounded-lg hover:bg-gray-200 transition-colors">
+                  <button onClick={() => navigate("/car-details")} className="flex-1 bg-gray-100 text-gray-800 py-2 rounded-lg hover:bg-gray-200 transition-colors">
                     View Details
                   </button>
                 </div>

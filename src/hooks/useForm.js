@@ -55,3 +55,29 @@ const useForm = (initialState = {}) => {
 };
 
 export default useForm;
+// import { useState } from 'react';
+
+// const useForm = (initialState = {}) => {
+//   const [formData, setFormData] = useState(initialState);
+//   const [errors, setErrors] = useState({});
+
+//   const handleChange = (e) => {
+//     const { name, value } = e.target;
+//     setFormData(prev => ({ ...prev, [name]: value }));
+//   };
+
+//   const validate = (rules) => {
+//     let newErrors = {};
+//     for (const field in rules) {
+//       if (rules[field].required && !formData[field]) {
+//         newErrors[field] = `${field} is required`;
+//       }
+//     }
+//     setErrors(newErrors);
+//     return Object.keys(newErrors).length === 0;
+//   };
+
+//   return { formData, errors, handleChange, validate };
+// };
+
+// export default useForm;
