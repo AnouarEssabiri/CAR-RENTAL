@@ -3,13 +3,15 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
-import Booking from "./pages/Booking";
+import RentMyCar from "./pages/RentMyCar";
 import Cars from "./pages/Cars";
 import Order from "./pages/Order";
 import Payment from "./pages/Payment";
 import CarDetails from "./components/CarDetails";
 import FormSeller from "./pages/test/FormSeller";
 import FormInfoSeller from "./pages/test/FormInfoSeller";
+import CarViewInMap from "./pages/CarViewInMap";
+import Map from "./components/map/Map";
 
 function App() {
   return (
@@ -18,13 +20,15 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/booking" element={<Booking />} />
+      <Route path="/RentMyCar" element={<RentMyCar />} />
       <Route path="/cars" element={<Cars />} />
       <Route path="/order" element={<Order />} />
       <Route path="/payment" element={<Payment />} />
       <Route path="/car-details" element={<CarDetails />} />
       <Route path="/seller" element={<FormSeller />} />
       <Route path="/info" element={<FormInfoSeller />} />
+      <Route path="/Map" element={<CarViewInMap />} />
+      <Route path="/Mapi" element={<Map />} />
     </Routes>
   );
 }
