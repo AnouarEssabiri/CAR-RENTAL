@@ -411,6 +411,11 @@ const Home = () => {
                     Contact
                   </a>
                 </li>
+                <li>
+                  <a href="#" className="text-gray-400 hover:text-white">
+                    Become a Member
+                  </a>
+                </li>
               </ul>
             </div>
             <div>

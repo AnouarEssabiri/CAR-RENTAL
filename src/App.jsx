@@ -8,6 +8,8 @@ import Cars from "./pages/Cars";
 import Order from "./pages/Order";
 import Payment from "./pages/Payment";
 import CarDetails from "./components/CarDetails";
+import FormSeller from "./pages/test/FormSeller";
+import FormInfoSeller from "./pages/test/FormInfoSeller";
 
 function App() {
   return (
@@ -21,6 +23,8 @@ function App() {
       <Route path="/order" element={<Order />} />
       <Route path="/payment" element={<Payment />} />
       <Route path="/car-details" element={<CarDetails />} />
+      <Route path="/seller" element={<FormSeller />} />
+      <Route path="/info" element={<FormInfoSeller />} />
     </Routes>
   );
 }
