@@ -1,12 +1,19 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "../components/ui/card.tsx";
-import { Camera, Plus, X } from "lucide-react";
+import { Camera, Map, Plus, X } from "lucide-react";
 import Sidebar from "../components/layout/Sidebar.jsx";
+import Location from "../components/map/Map.jsx";
+import { useSelector } from "react-redux";
+import {
+  addUser,
+  openDatabase,
+  upgradeDatabase,
+} from "../database/Database.jsx";
 
 const RentMyCar = () => {
   const [formData, setFormData] = useState({
@@ -21,6 +28,15 @@ const RentMyCar = () => {
     images: [],
     newSpec: "",
   });
+  const [showMap, setShowMap] = useState(false);
+  const [location, setLocation] = useState({
+    lat: 0,
+    lng: 0,
+  });
+  const features = useSelector((state) => state.feature);
+  const brands = useSelector((state) => state.brand);
+  const categories = useSelector((state) => state.category);
+  const [db, setDb] = useState(null);
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
@@ -47,51 +63,64 @@ const RentMyCar = () => {
       specs: prev.specs.filter((_, index) => index !== indexToRemove),
     }));
   };
-  let db;
+  // let db;
+  console.log(features);
 
-  const openDatabase = () => {
-    const request = indexedDB.open("MyDatabase", 1);
+  // const openDatabase = () => {
+  //   const request = indexedDB.open("MyDatabase", 1);
 
-    request.onupgradeneeded = (event) => {
-      db = event.target.result;
-      if (!db.objectStoreNames.contains("users")) {
-        db.createObjectStore("users", { keyPath: "id", autoIncrement: true });
-      }
-    };
+  //   request.onupgradeneeded = (event) => {
+  //     db = event.target.result;
+  //     if (!db.objectStoreNames.contains("users")) {
+  //       db.createObjectStore("users", { keyPath: "id", autoIncrement: true });
+  //     }
+  //   };
 
-    request.onsuccess = (event) => {
-      db = event.target.result;
-      console.log("Database opened successfully");
-      // Call functions that require db here
-      addUser({ id: Date.now(), name: "nouara", cars: [formData] });
-    };
+  //   request.onsuccess = (event) => {
+  //     db = event.target.result;
+  //     console.log("Database opened successfully");
+  //     // Call functions that require db here
+  //     addUser({ id: Date.now(), name: "nouara", cars: [formData] }, location);
+  //   };
 
-    request.onerror = (event) => {
-      console.error("Database error:", event.target.errorCode);
-    };
-  };
+  //   request.onerror = (event) => {
+  //     console.error("Database error:", event.target.errorCode);
+  //   };
+  // };
 
-  const addUser = (user) => {
-    if (!db) {
-      console.error("Database is not initialized");
-      return;
-    }
-    const transaction = db.transaction(["users"], "readwrite");
-    const store = transaction.objectStore("users");
-    const request = store.add(user);
+  // const addUser = (user) => {
+  //   if (!db) {
+  //     console.error("Database is not initialized");
+  //     return;
+  //   }
+  //   const transaction = db.transaction(["users"], "readwrite");
+  //   const store = transaction.objectStore("users");
+  //   const request = store.add(user);
 
-    request.onsuccess = () => {
-      console.log("User added:", user);
-    };
+  //   request.onsuccess = () => {
+  //     console.log("User added:", user);
+  //   };
 
-    request.onerror = (event) => {
-      console.error("Add error:", event.target.errorCode);
-    };
-  };
+  //   request.onerror = (event) => {
+  //     console.error("Add error:", event.target.errorCode);
+  //   };
+  // };
 
   // Open the database
-  openDatabase();
-
+  useEffect(() => {
+    openDatabase(
+      "MyDatabase",
+      1,
+      upgradeDatabase,
+      (event) => {
+        setDb(event.target.result);
+        console.log("Database opened successfully");
+      },
+      (event) => {
+        console.error("Database error:", event.target.errorCode);
+      }
+    );
+  }, []);
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
 
@@ -109,28 +138,79 @@ const RentMyCar = () => {
       }));
     }
   };
+  const DisplayMap = () => {
+    setShowMap(!showMap);
+  };
+
+  console.log(location);
+  // openDatabase();
+
   const HandlSubmit = (e) => {
     e.preventDefault();
     console.log(formData);
-    localStorage.setItem("member", JSON.stringify(formData));
-    const existingData = JSON.parse(localStorage.getItem("member"));
-    const updatedData = { ...existingData,formData };
-    localStorage.setItem("member", JSON.stringify(updatedData));
+
+    const user = {
+      id: Date.now(),
+      name: "salah",
+      cars: [formData],
+      location,
+    };
+
+    addUser(db, user);
   };
 
-  const features = [
-    "Air Conditioning",
-    "GPS Navigation",
-    "Bluetooth",
-    "Backup Camera",
-    "Heated Seats",
-    "Sunroof",
-  ];
+  //   const request = indexedDB.open("MyDatabase", 1);
+
+  //   request.onupgradeneeded = (event) => {
+  //     db = event.target.result;
+  //     if (!db.objectStoreNames.contains("users")) {
+  //       db.createObjectStore("users", { keyPath: "id", autoIncrement: true });
+  //     }
+  //   };
+
+  //   request.onsuccess = (event) => {
+  //     db = event.target.result;
+  //     console.log("Database opened successfully");
+  //     // Call functions that require db here
+  //     // addUser({ id: Date.now(), name: "nouara", cars: [formData] }, location);
+  //   };
+
+  //   request.onerror = (event) => {
+  //     console.error("Database error:", event.target.errorCode);
+  //   };
+  // };
+
+  // const addUser = (user) => {
+  //   if (!db) {
+  //     console.error("Database is not initialized");
+  //     return;
+  //   }
+  //   const transaction = db.transaction(["users"], "readwrite");
+  //   const store = transaction.objectStore("users");
+  //   const request = store.add(user);
+
+  //   request.onsuccess = () => {
+  //     console.log("User added:", user);
+  //   };
+
+  //   request.onerror = (event) => {
+  //     console.error("Add error:", event.target.errorCode);
+  //   };
+  // };
+
+  // const features = [
+  //   "Air Conditioning",
+  //   "GPS Navigation",
+  //   "Bluetooth",
+  //   "Backup Camera",
+  //   "Heated Seats",
+  //   "Sunroof",
+  // ];
 
   return (
     <>
       <Sidebar />
-      <div className="min-h-screen bg-gradient-to-br bg-gray-100 to-indigo-100 p-6">
+      <div className="min-h-screen bg-gradient-to-br bg-white via-indigo-100 to-indigo-100 p-6">
         <Card className="max-w-4xl mx-auto">
           <CardHeader className="space-y-1">
             <CardTitle className="text-3xl font-bold text-gray-900">
@@ -152,32 +232,14 @@ const RentMyCar = () => {
                     name="make"
                     value={formData.make}
                     onChange={handleInputChange}
-                    list="market"
+                    list="brand"
                     className="w-full rounded-lg border border-gray-300 p-3 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                     placeholder="e.g., Toyota"
                   />
-                  <datalist id="market" name="carType">
-                    <option value="BMW" />
-                    <option value="AUDI" />
-                    <option value="MERCEDES" />
-                    <option value="PORCHE" />
-                    <option value="TOYOTA" />
-                    <option value="VW" />
-                    <option value="VOLVO" />
-                    <option value="FORD" />
-                    <option value="NISSAN" />
-                    <option value="HONDA" />
-                    <option value="KIA" />
-                    <option value="LEXUS" />
-                    <option value="SUBARU" />
-                    <option value="MITSUBISHI" />
-                    <option value="CHEVROLET" />
-                    <option value="DODGE" />
-                    <option value="FERRARI" />
-                    <option value="LAMBORGHINI" />
-                    <option value="JAGUAR" />
-                    <option value="MASERATI" />
-                    <option value="ROLLS-ROYCE" />
+                  <datalist id="brand" name="carType">
+                    {brands.map((brand) => (
+                      <option key={brand} value={brand} />
+                    ))}
                   </datalist>
                 </div>
                 <div className="space-y-2">
@@ -240,11 +302,11 @@ const RentMyCar = () => {
                   className="w-full rounded-lg border border-gray-300 p-3 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 >
                   <option value="">Select vehicle type</option>
-                  <option value="Sedan">Sedan</option>
-                  <option value="SUV">SUV</option>
-                  <option value="Truck">Truck</option>
-                  <option value="Luxury">Luxury</option>
-                  <option value="Sports">Sports</option>
+                  {categories.map((category) => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -311,6 +373,28 @@ const RentMyCar = () => {
                   ))}
                 </div>
               </div>
+              <div className="space-y-3">
+                <label className="text-sm font-medium text-gray-700">
+                  Location
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    name="location"
+                    value={location.lat + "," + location.lng}
+                    onChange={handleInputChange}
+                    className="flex-1 rounded-lg border border-gray-300 p-3 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    placeholder="Add location from map ('33.5731','-7.5898')"
+                  />
+                  <button
+                    type="button"
+                    onClick={DisplayMap}
+                    className="rounded-lg bg-blue-600 px-4 text-white hover:bg-blue-700"
+                  >
+                    <Map className="h-5 w-5" />
+                  </button>
+                </div>
+              </div>
 
               <div className="space-y-3">
                 <label className="text-sm font-medium text-gray-700">
@@ -353,6 +437,7 @@ const RentMyCar = () => {
             </form>
           </CardContent>
         </Card>
+        {showMap && <Location location={setLocation} />}
       </div>
     </>
   );

@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/layout/Header";
+import { Map } from "lucide-react";
+import MapUser from "../components/map/MapUser";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -10,6 +12,11 @@ const Home = () => {
     returnDate: "",
     carType: "all",
   });
+  const [showMap, setShowMap] = useState(false);
+
+  const DisplayMap = () => {
+    setShowMap(!showMap);
+  };
 
   const featuredCars = [
     {
@@ -148,16 +155,24 @@ const Home = () => {
                     <option value="electric">Electric</option>
                   </select>
                 </div>
-                <div className="md:col-span-4">
+                <div className="md:col-span-4 flex items-center space-x-2">
                   <button
                     type="submit"
-                    className="w-full bg-blue-600 text-white py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-colors"
+                    className="w-[93%] bg-blue-600 text-white py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-colors"
                   >
                     Search Available Cars
+                  </button>
+                  <button
+                    type="submit"
+                    className="w-[7%] bg-blue-600 text-white py-4 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-colors flex justify-center"
+                    onClick={DisplayMap}
+                  >
+                    <Map />
                   </button>
                 </div>
               </form>
             </div>
+            {showMap && <MapUser />}
           </div>
         </div>
       </div>
@@ -277,10 +292,16 @@ const Home = () => {
                 </div>
 
                 <div className="flex space-x-2">
-                  <button onClick={() => navigate("payment")}  className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                  <button
+                    onClick={() => navigate("payment")}
+                    className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                  >
                     Book Now
                   </button>
-                  <button onClick={() => navigate("/car-details")} className="flex-1 bg-gray-100 text-gray-800 py-2 rounded-lg hover:bg-gray-200 transition-colors">
+                  <button
+                    onClick={() => navigate("/car-details")}
+                    className="flex-1 bg-gray-100 text-gray-800 py-2 rounded-lg hover:bg-gray-200 transition-colors"
+                  >
                     View Details
                   </button>
                 </div>

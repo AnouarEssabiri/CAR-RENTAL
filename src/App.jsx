@@ -12,6 +12,8 @@ import FormSeller from "./pages/test/FormSeller";
 import FormInfoSeller from "./pages/test/FormInfoSeller";
 import CarViewInMap from "./pages/CarViewInMap";
 import Map from "./components/map/Map";
+import CarsInfo from "./pages/test/CarsInfo";
+import MapUser from "./components/map/MapUser";
 
 function App() {
   return (
@@ -27,8 +29,10 @@ function App() {
       <Route path="/car-details" element={<CarDetails />} />
       <Route path="/seller" element={<FormSeller />} />
       <Route path="/info" element={<FormInfoSeller />} />
-      <Route path="/Map" element={<CarViewInMap />} />
-      <Route path="/Mapi" element={<Map />} />
+      <Route path="/Mapi" element={<CarViewInMap />} />
+      <Route path="/map" element={<Map />} />
+      <Route path="/mapuser" element={<MapUser />} />
+      <Route path="/carinfo" element={<CarsInfo />} />
     </Routes>
   );
 }

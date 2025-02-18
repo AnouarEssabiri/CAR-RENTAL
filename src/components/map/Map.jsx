@@ -2,18 +2,18 @@ import React, { useCallback, useState } from 'react';
 import { GoogleMap, useJsApiLoader, Marker } from '@react-google-maps/api';
 
 const containerStyle = {
-  width: '100%',
+  width: '50%',
   height: '500px',
 };
 
 const center = {
-  lat: 33.5731, // Default latitude (e.g., for Morocco)
-  lng: -7.5898, // Default longitude (e.g., for Morocco)
+  lat: 33.5731, 
+  lng: -7.5898, 
 };
 
-const Map = () => {
+const Map = (props) => {
   const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: 'uy', // Replace with your API key
+    googleMapsApiKey: 'AIzaSyCnrK9QY5GOJEyvzfTHxMzpBN8obW_Fv28',
   });
 
   const [marker, setMarker] = useState(null);
@@ -23,19 +23,24 @@ const Map = () => {
     const lng = event.latLng.lng();
     console.log('Latitude:', lat, 'Longitude:', lng);
     setMarker({ lat, lng });
+    props.location({lat, lng})
   }, []);
 
-  return isLoaded ? (
-    <GoogleMap
-      mapContainerStyle={containerStyle}
-      center={center}
-      zoom={8}
-      onClick={handleClick}
-    >
-      {marker && <Marker position={marker} />}
-    </GoogleMap>
-  ) : (
-    <p>Loading...</p>
+  return (
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      {isLoaded ? (
+        <GoogleMap
+          mapContainerStyle={containerStyle}
+          center={center}
+          zoom={8}
+          onClick={handleClick}
+        >
+          {marker && <Marker position={marker} />}
+        </GoogleMap>
+      ) : (
+        <p>Loading...</p>
+      )}
+    </div>
   );
 };
 
