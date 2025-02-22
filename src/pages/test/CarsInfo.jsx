@@ -5,52 +5,54 @@ import {
   openDatabase,
   upgradeDatabase,
 } from "../../database/Database";
+import useDatabase from "../../hooks/useDatabase";
 
 const CarsInfo = () => {
   const [db, setDb] = useState(null);
-  const [users, setUsers] = useState([]);
-  const [locations, SetLocations] = useState([]);
-  useEffect(() => {
-    openDatabase(
-      "MyDatabase",
-      1,
-      upgradeDatabase,
-      (event) => {
-        setDb(event.target.result);
-        console.log("Database opened successfully");
-        fetchUsers(event.target.result); // Fetch users when the database is opened successfully
-        fetchLocations(event.target.result); // Fetch locations when the database is opened successfully
-    },
-      (event) => {
-        console.error("Database error:", event.target.errorCode);
-      }
-    );
-    // openDatabase(
-    //   "myDatabase",
-    //   1,
-    //   upgradeDatabase,
-    //   (event) => {
-    //     const db = event.target.result;
-    //     getAllLocations(db, (locations) => {
-    //       console.log("All locations:", locations);
-    //     });
-    //   },
-    //   (event) => {
-    //     console.error("Database open error:", event.target.errorCode);
-    //   }
-    // );
-  }, []);
-  const fetchUsers = (db) => {
-    getAllUsers(db, (users) => {
-      setUsers(users);
-    });
-  };
-  const fetchLocations = (db) => {
-    getAllLocations(db, (locations) => {
-        SetLocations(locations);
-      console.log("All locations:", locations);
-    });
-  };
+  // const [users, setUsers] = useState([]);
+  // const [locations, SetLocations] = useState([]);
+  const {users, locations}= useDatabase();
+  // useEffect(() => {
+  //   openDatabase(
+  //     "MyDatabase",
+  //     1,
+  //     upgradeDatabase,
+  //     (event) => {
+  //       setDb(event.target.result);
+  //       console.log("Database opened successfully");
+  //       fetchUsers(event.target.result); // Fetch users when the database is opened successfully
+  //       fetchLocations(event.target.result); // Fetch locations when the database is opened successfully
+  //   },
+  //     (event) => {
+  //       console.error("Database error:", event.target.errorCode);
+  //     }
+  //   );
+  //   // openDatabase(
+  //   //   "myDatabase",  
+  //   //   1,
+  //   //   upgradeDatabase,
+  //   //   (event) => {
+  //   //     const db = event.target.result;
+  //   //     getAllLocations(db, (locations) => {
+  //   //       console.log("All locations:", locations);
+  //   //     });
+  //   //   },
+  //   //   (event) => {
+  //   //     console.error("Database open error:", event.target.errorCode);
+  //   //   }
+  //   // );
+  // }, []);
+  // const fetchUsers = (db) => {
+  //   getAllUsers(db, (users) => {
+  //     setUsers(users);
+  //   });
+  // };
+  // const fetchLocations = (db) => {
+  //   getAllLocations(db, (locations) => {
+  //       SetLocations(locations);
+  //     console.log("All locations:", locations);
+  //   });
+  // };
   console.log(users);
   return (
     <div>

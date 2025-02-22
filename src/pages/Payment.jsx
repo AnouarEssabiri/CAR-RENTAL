@@ -1,7 +1,32 @@
-import { Link } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import Header from "../components/layout/Header";
+// import { addBooking } from "../database/Database";
+import { auth } from "../config/config.firebase";
+import { useState } from "react";
+import useDatabase from "../hooks/useDatabase";
 
 const Payment = () => {
+  const [name,setName] = useState("");
+  const navigate = useNavigate();
+  const {CarId} = useParams();
+  const {users} = useDatabase();
+  const user = auth.currentUser;
+  console.log(user)
+  const HandleSubmitPayment = (e) => {
+    e.preventDefault();
+    console.log(formData);
+    navigate("/home");
+    const book = {
+      id: Date.now(),
+      name: name,
+      user,
+    };
+
+    // addBooking(db, book);
+  };
     return (
+      <>
+      <Header />
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -11,7 +36,7 @@ const Payment = () => {
                 <h2 className="text-3xl font-bold mb-8">Payment Details</h2>
                 
                 {/* Card Preview */}
-                <div className="relative mb-8">
+                {/* <div className="relative mb-8">
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-500 rounded-2xl shadow-lg transform -rotate-2"></div>
                   <div className="relative bg-gradient-to-r from-blue-600 to-blue-500 rounded-2xl p-6 text-white">
                     <div className="flex justify-between items-start mb-8">
@@ -33,7 +58,7 @@ const Payment = () => {
                       <div className="w-12 h-12 bg-white/20 rounded-full -mr-4 -mb-4"></div>
                     </div>
                   </div>
-                </div>
+                </div> */}
   
                 {/* Payment Form */}
                 <form className="space-y-6">
@@ -42,6 +67,7 @@ const Payment = () => {
                     <input
                       type="text"
                       placeholder="1234 5678 9012 3456"
+                      required
                       className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
@@ -52,6 +78,7 @@ const Payment = () => {
                       <input
                         type="text"
                         placeholder="MM/YY"
+                        required
                         className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
@@ -60,6 +87,7 @@ const Payment = () => {
                       <input
                         type="text"
                         placeholder="123"
+                        required
                         className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
@@ -70,6 +98,7 @@ const Payment = () => {
                     <input
                       type="text"
                       placeholder="John Doe"
+                      required
                       className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
@@ -83,12 +112,13 @@ const Payment = () => {
                   </div>
   
                   <div className="border-t pt-6">
-                    <Link to="/order"
+                    <button
+
                       type="submit"
                       className="w-full bg-blue-600 text-center hover:bg-blue-700 text-white font-semibold py-4 px-6 rounded-xl transition-all transform hover:scale-[1.02]"
                     >
                       Pay $1,938.50
-                    </Link>
+                    </button>
                   </div>
                 </form>
               </div>
@@ -157,6 +187,7 @@ const Payment = () => {
           </div>
         </div>
       </div>
+      </>
     );
   };
   

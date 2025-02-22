@@ -1,6 +1,10 @@
+import { Car } from "lucide-react";
 import React from "react";
+import { Link } from "react-router-dom";
 
-const Sidebar = () => {
+const Sidebar = (props) => {
+  // const whoactive = props.active == "rent" ? "bg-blue-800/30 text-blue-400" : ""
+
   return (
     <div className="flex">
       {/* Sidebar */}
@@ -11,9 +15,9 @@ const Sidebar = () => {
         </div>
 
         <nav className="space-y-4">
-          <a
-            href="/dashboard"
-            className="flex items-center space-x-3 bg-blue-800/30 text-blue-400 p-3 rounded-lg"
+          <Link
+            to="/dashboard"
+            className={`flex items-center ${props.active == "dashboard" ? "bg-blue-800/30 text-blue-400" : ""} space-x-3 text-gray-300 hover:bg-gray-800 p-3 rounded-lg transition-colors`}
           >
             <svg
               className="w-5 h-5"
@@ -29,11 +33,19 @@ const Sidebar = () => {
               />
             </svg>
             <span>Dashboard</span>
-          </a>
-          <a
-            href="/RentMyCar"
-            className="flex items-center space-x-3 text-gray-300 hover:bg-gray-800 p-3 rounded-lg transition-colors"
+          </Link>
+          <Link
+            to="/RentMyCar"
+            className={`flex items-center ${props.active == "rent" ? "bg-blue-800/30 text-blue-400" : ""} space-x-3 text-gray-300 hover:bg-gray-800 p-3 rounded-lg transition-colors`}
           >
+            <Car />
+            <span>Rent Car</span>
+          </Link>
+          <Link
+            to="/ListMyCars"
+            className={`flex items-center ${props.active == "mycars" ? "bg-blue-800/30 text-blue-400" : ""} space-x-3 text-gray-300 hover:bg-gray-800 p-3 rounded-lg transition-colors`}
+
+>
             <svg
               className="w-5 h-5"
               fill="none"
@@ -48,7 +60,7 @@ const Sidebar = () => {
               />
             </svg>
             <span>My Cars</span>
-          </a>
+          </Link>
           {/* Add more navigation items */}
         </nav>
       </div>

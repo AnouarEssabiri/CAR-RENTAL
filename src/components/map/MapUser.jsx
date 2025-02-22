@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { GoogleMap, useJsApiLoader, Marker } from "@react-google-maps/api";
 import {
-  getAllLocations,
-  getAllUsers,
-  openDatabase,
-  upgradeDatabase,
-} from "../../database/Database";
+  GoogleMap,
+  useJsApiLoader,
+  Marker,
+  InfoWindow,
+} from "@react-google-maps/api";
 import { useNavigate } from "react-router-dom";
+import useDatabase from "../../hooks/useDatabase";
 
 const containerStyle = {
   width: "100%",
@@ -20,72 +20,46 @@ const center = {
 
 const MapUser = (props) => {
   const navigate = useNavigate();
+  const [selectedMarker, setSelectedMarker] = useState(null);
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: "AIzaSyCnrK9QY5GOJEyvzfTHxMzpBN8obW_Fv28",
   });
-  const [db, setDb] = useState(null);
+
   const [marker, setMarker] = useState(null);
-  const [locations, SetLocations] = useState([]);
-  const [users, setUsers] = useState([]);
-  useEffect(() => {
-    openDatabase(
-      "MyDatabase",
-      1,
-      upgradeDatabase,
-      (event) => {
-        setDb(event.target.result);
-        console.log("Database opened successfully");
-        fetchUsers(event.target.result); // Fetch locations when the database is opened successfully
-      },
-      (event) => {
-        console.error("Database error:", event.target.errorCode);
+  const {users} = useDatabase();
+  const [location,SetLocation] = useState()
+  const mar = (user) => {
+    console.log("Marker clicked:", user.name);
+    setSelectedMarker(user);
+  };  
+
+
+  const handleClick = useCallback(
+    (event) => {
+      const lat = event.latLng.lat();
+      const lng = event.latLng.lng();
+      console.log("Latitude:", lat, "Longitude:", lng);
+      setMarker({ lat, lng });
+      if (props.location) {
+        props.location({ lat, lng });
       }
-    );
-  }, []);
-  // const fetchLocations = (db) => {
-  //   getAllLocations(db, (locations) => {
-  //     SetLocations(locations);
-  //     console.log("All locations:", locations);
-  //   });
-  // };
-  const fetchUsers = (db) => {
-    getAllUsers(db, (users) => {
-      setUsers(users);
-    });
-  };
-  const mar = (id) => {
-    console.log("Marker clicked:", id);
-    navigate(`/cars`);
-  };
-  const handleClick = useCallback((event) => {
-    const lat = event.latLng.lat();
-    const lng = event.latLng.lng();
-    console.log("Latitude:", lat, "Longitude:", lng);
-    setMarker({ lat, lng });
-    if(props.location){
-      props.location({ lat, lng });
-    }
-  }, []);
+    },
+    [props]
+  );
 
   return (
     <div
       className="map-container full-screen"
       style={{
-        // display: "flex",
-        // justifyContent: "end",
-        // alignItems: "center",
-        // height: "100vh",
-        position: "fixed", 
+        position: "fixed",
         top: "50%",
         left: "50%",
         width: "100%",
-        height: "100%",
+        height: "50%",
         zIndex: 1000,
         transform: "translate(-50%, -50%)",
-    
+        
 
-        // position: "fixed",
-        // zIndex: 10
       }}
     >
       {isLoaded ? (
@@ -95,20 +69,31 @@ const MapUser = (props) => {
           zoom={10}
           fullscreenControl={true}
           onClick={handleClick}
+          onCloseClick={() => navigate("/")}
         >
           {users.map((user, index) => (
             <Marker
               key={index}
               position={user.location}
-              onClick={() => mar(user.name)}
+              onClick={() => mar(user)}
               title={user.name}
               icon={{
-                url: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png',
+                url: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
                 scaledSize: new window.google.maps.Size(40, 40),
               }}
             />
           ))}
-          {/* {marker && <Marker position={marker} />} */}
+
+          {selectedMarker && (
+            <InfoWindow
+              position={selectedMarker.location}
+              onCloseClick={() => setSelectedMarker(null)}
+            >
+              <div>
+                <h2>{selectedMarker.name}</h2>
+              </div>
+            </InfoWindow>
+          )}
         </GoogleMap>
       ) : (
         <p>Loading...</p>

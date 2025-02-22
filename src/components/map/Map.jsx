@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { GoogleMap, useJsApiLoader, Marker } from '@react-google-maps/api';
+import { Riple } from 'react-loading-indicators';
 
 const containerStyle = {
   width: '50%',
@@ -23,11 +24,11 @@ const Map = (props) => {
     const lng = event.latLng.lng();
     console.log('Latitude:', lat, 'Longitude:', lng);
     setMarker({ lat, lng });
-    props.location({lat, lng})
+    props.location({lat, lng});
   }, []);
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+    <div id='map' style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
       {isLoaded ? (
         <GoogleMap
           mapContainerStyle={containerStyle}
@@ -38,7 +39,7 @@ const Map = (props) => {
           {marker && <Marker position={marker} />}
         </GoogleMap>
       ) : (
-        <p>Loading...</p>
+        <Riple color="#18a1fe" size="large" text="" textColor="" />
       )}
     </div>
   );

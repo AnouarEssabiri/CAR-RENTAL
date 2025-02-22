@@ -5,7 +5,11 @@ module.exports = {
     "./public/index.html"
   ],
   theme: {
-    extend: {},
+    extend: {
+      margin: {
+        'listCar': 'calc(100% - 67px)',
+      },
+    },
   },
   plugins: [],
 }

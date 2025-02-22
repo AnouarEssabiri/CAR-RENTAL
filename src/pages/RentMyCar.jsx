@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Card,
   CardContent,
@@ -9,11 +9,9 @@ import { Camera, Map, Plus, X } from "lucide-react";
 import Sidebar from "../components/layout/Sidebar.jsx";
 import Location from "../components/map/Map.jsx";
 import { useSelector } from "react-redux";
-import {
-  addUser,
-  openDatabase,
-  upgradeDatabase,
-} from "../database/Database.jsx";
+import { addUser } from "../database/Database.jsx";
+import useDatabase from "../hooks/useDatabase.jsx";
+import { useNavigate } from "react-router-dom";
 
 const RentMyCar = () => {
   const [formData, setFormData] = useState({
@@ -27,6 +25,8 @@ const RentMyCar = () => {
     specs: [],
     images: [],
     newSpec: "",
+    city: "",
+    available: true,
   });
   const [showMap, setShowMap] = useState(false);
   const [location, setLocation] = useState({
@@ -36,7 +36,9 @@ const RentMyCar = () => {
   const features = useSelector((state) => state.feature);
   const brands = useSelector((state) => state.brand);
   const categories = useSelector((state) => state.category);
-  const [db, setDb] = useState(null);
+  // const [db, setDb] = useState(null);
+  const ref = useRef();
+  const navigate = useNavigate();
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
@@ -45,6 +47,17 @@ const RentMyCar = () => {
       ...prev,
       images: imageUrls,
     }));
+  };
+  const HandleImageChange = (e) => {
+    const { files, name } = e.target;
+    const image = new FileReader();
+    image.onloadend = () => {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: image.result,
+      }));
+    };
+    image.readAsDataURL(files[0]);
   };
 
   const handleAddSpec = () => {
@@ -65,62 +78,6 @@ const RentMyCar = () => {
   };
   // let db;
   console.log(features);
-
-  // const openDatabase = () => {
-  //   const request = indexedDB.open("MyDatabase", 1);
-
-  //   request.onupgradeneeded = (event) => {
-  //     db = event.target.result;
-  //     if (!db.objectStoreNames.contains("users")) {
-  //       db.createObjectStore("users", { keyPath: "id", autoIncrement: true });
-  //     }
-  //   };
-
-  //   request.onsuccess = (event) => {
-  //     db = event.target.result;
-  //     console.log("Database opened successfully");
-  //     // Call functions that require db here
-  //     addUser({ id: Date.now(), name: "nouara", cars: [formData] }, location);
-  //   };
-
-  //   request.onerror = (event) => {
-  //     console.error("Database error:", event.target.errorCode);
-  //   };
-  // };
-
-  // const addUser = (user) => {
-  //   if (!db) {
-  //     console.error("Database is not initialized");
-  //     return;
-  //   }
-  //   const transaction = db.transaction(["users"], "readwrite");
-  //   const store = transaction.objectStore("users");
-  //   const request = store.add(user);
-
-  //   request.onsuccess = () => {
-  //     console.log("User added:", user);
-  //   };
-
-  //   request.onerror = (event) => {
-  //     console.error("Add error:", event.target.errorCode);
-  //   };
-  // };
-
-  // Open the database
-  useEffect(() => {
-    openDatabase(
-      "MyDatabase",
-      1,
-      upgradeDatabase,
-      (event) => {
-        setDb(event.target.result);
-        console.log("Database opened successfully");
-      },
-      (event) => {
-        console.error("Database error:", event.target.errorCode);
-      }
-    );
-  }, []);
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
 
@@ -143,7 +100,9 @@ const RentMyCar = () => {
   };
 
   console.log(location);
+
   // openDatabase();
+  const { db } = useDatabase();
 
   const HandlSubmit = (e) => {
     e.preventDefault();
@@ -155,62 +114,28 @@ const RentMyCar = () => {
       cars: [formData],
       location,
     };
+    setFormData({
+      id: Date.now(),
+      make: "",
+      model: "",
+      year: "",
+      dailyRate: "",
+      category: "",
+      features: [],
+      specs: [],
+      images: [],
+      newSpec: "",
+      city: "",
+      available: true,
+    });
 
     addUser(db, user);
   };
 
-  //   const request = indexedDB.open("MyDatabase", 1);
-
-  //   request.onupgradeneeded = (event) => {
-  //     db = event.target.result;
-  //     if (!db.objectStoreNames.contains("users")) {
-  //       db.createObjectStore("users", { keyPath: "id", autoIncrement: true });
-  //     }
-  //   };
-
-  //   request.onsuccess = (event) => {
-  //     db = event.target.result;
-  //     console.log("Database opened successfully");
-  //     // Call functions that require db here
-  //     // addUser({ id: Date.now(), name: "nouara", cars: [formData] }, location);
-  //   };
-
-  //   request.onerror = (event) => {
-  //     console.error("Database error:", event.target.errorCode);
-  //   };
-  // };
-
-  // const addUser = (user) => {
-  //   if (!db) {
-  //     console.error("Database is not initialized");
-  //     return;
-  //   }
-  //   const transaction = db.transaction(["users"], "readwrite");
-  //   const store = transaction.objectStore("users");
-  //   const request = store.add(user);
-
-  //   request.onsuccess = () => {
-  //     console.log("User added:", user);
-  //   };
-
-  //   request.onerror = (event) => {
-  //     console.error("Add error:", event.target.errorCode);
-  //   };
-  // };
-
-  // const features = [
-  //   "Air Conditioning",
-  //   "GPS Navigation",
-  //   "Bluetooth",
-  //   "Backup Camera",
-  //   "Heated Seats",
-  //   "Sunroof",
-  // ];
-
   return (
     <>
-      <Sidebar />
-      <div className="min-h-screen bg-gradient-to-br bg-white via-indigo-100 to-indigo-100 p-6">
+      <Sidebar active="rent" />
+      <div className="min-h-screen bg-gradient-to-br ml-[260px] bg-white via-indigo-100 to-indigo-100 p-6">
         <Card className="max-w-4xl mx-auto">
           <CardHeader className="space-y-1">
             <CardTitle className="text-3xl font-bold text-gray-900">
@@ -391,7 +316,9 @@ const RentMyCar = () => {
                     onClick={DisplayMap}
                     className="rounded-lg bg-blue-600 px-4 text-white hover:bg-blue-700"
                   >
-                    <Map className="h-5 w-5" />
+                    <a href="#map">
+                      <Map className="h-5 w-5" />
+                    </a>
                   </button>
                 </div>
               </div>
@@ -412,7 +339,8 @@ const RentMyCar = () => {
                       type="file"
                       className="hidden"
                       multiple
-                      onChange={handleImageChange}
+                      name="images"
+                      onChange={HandleImageChange}
                     />
                   </label>
                 </div>
