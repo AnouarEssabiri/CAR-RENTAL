@@ -22,17 +22,16 @@ const MapUser = (props) => {
   const navigate = useNavigate();
   const [selectedMarker, setSelectedMarker] = useState(null);
   const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: "AIzaSyCnrK9QY5GOJEyvzfTHxMzpBN8obW_Fv28",
+    googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
   });
 
   const [marker, setMarker] = useState(null);
-  const {users} = useDatabase();
-  const [location,SetLocation] = useState()
+  const { users } = useDatabase();
+  const [location, SetLocation] = useState();
   const mar = (user) => {
     console.log("Marker clicked:", user.name);
     setSelectedMarker(user);
-  };  
-
+  };
 
   const handleClick = useCallback(
     (event) => {
@@ -58,8 +57,6 @@ const MapUser = (props) => {
         height: "50%",
         zIndex: 1000,
         transform: "translate(-50%, -50%)",
-        
-
       }}
     >
       {isLoaded ? (

@@ -128,3 +128,33 @@ export const getAllCars = (db, callback) => {
     console.error("Get all locations error:", event.target.errorCode);
   };
 };
+export const UpdateBook = (db, id, status) => {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction("bookings", "readwrite");
+    const objectStore = transaction.objectStore("bookings");
+
+    const getRequest = objectStore.get(id);
+
+    getRequest.onsuccess = (event) => {
+      const booking = event.target.result;
+      if (booking) {
+        booking.status = status; 
+        const updateRequest = objectStore.put(booking);
+
+        updateRequest.onsuccess = () => {
+          resolve();
+        };
+
+        updateRequest.onerror = (event) => {
+          reject(event.target.error);
+        };
+      } else {
+        reject(new Error("Booking not found."));
+      }
+    };
+
+    getRequest.onerror = (event) => {
+      reject(event.target.error);
+    };
+  });
+};

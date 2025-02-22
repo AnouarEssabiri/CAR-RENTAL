@@ -12,6 +12,8 @@ import { useSelector } from "react-redux";
 import { addUser } from "../database/Database.jsx";
 import useDatabase from "../hooks/useDatabase.jsx";
 import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const RentMyCar = () => {
   const [formData, setFormData] = useState({
@@ -33,31 +35,51 @@ const RentMyCar = () => {
     lat: 0,
     lng: 0,
   });
+  const [error, setError] = useState({});
   const features = useSelector((state) => state.feature);
   const brands = useSelector((state) => state.brand);
   const categories = useSelector((state) => state.category);
-  // const [db, setDb] = useState(null);
-  const ref = useRef();
-  const navigate = useNavigate();
+  const {db} = useDatabase();
 
   const handleImageChange = (e) => {
-    const files = Array.from(e.target.files);
-    const imageUrls = files.map((file) => URL.createObjectURL(file));
-    setFormData((prev) => ({
-      ...prev,
-      images: imageUrls,
-    }));
-  };
-  const HandleImageChange = (e) => {
-    const { files, name } = e.target;
-    const image = new FileReader();
-    image.onloadend = () => {
-      setFormData((prev) => ({
+    const files = e.target.files;
+
+    // Check if files are selected
+    if (!files || files.length === 0) {
+      setError((prev) => ({
         ...prev,
-        [name]: image.result,
+        images: "Please select at least one image.",
       }));
-    };
-    image.readAsDataURL(files[0]);
+      return;
+    }
+
+    // Convert files to Base64
+    const promises = Array.from(files).map((file) => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = (error) => reject(error);
+        reader.readAsDataURL(file);
+      });
+    });
+
+    // Process all files
+    Promise.all(promises)
+      .then((base64Images) => {
+        setFormData((prev) => ({
+          ...prev,
+          images: [...prev.images, ...base64Images], // Append new Base64 images
+        }));
+        setError((prev) => ({ ...prev, images: "" })); // Clear image error
+        toast.success("Images uploaded successfully!");
+      })
+      .catch((error) => {
+        console.error("Error converting images to Base64:", error);
+        setError((prev) => ({
+          ...prev,
+          images: "Failed to upload images. Please try again.",
+        }));
+      });
   };
 
   const handleAddSpec = () => {
@@ -76,8 +98,7 @@ const RentMyCar = () => {
       specs: prev.specs.filter((_, index) => index !== indexToRemove),
     }));
   };
-  // let db;
-  console.log(features);
+
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
 
@@ -89,31 +110,55 @@ const RentMyCar = () => {
           : prev.features.filter((feature) => feature !== value),
       }));
     } else {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
+      setFormData((prev) => ({ ...prev, [name]: value }));
     }
+
+    // Clear error for the field being updated
+    setError((prev) => ({ ...prev, [name]: "" }));
   };
-  const DisplayMap = () => {
-    setShowMap(!showMap);
+
+  const validateForm = () => {
+    const errors = {};
+
+    // Check for empty required fields
+    if (!formData.make.trim()) errors.make = "Make is required.";
+    if (!formData.model.trim()) errors.model = "Model is required.";
+    if (!formData.year.trim()) errors.year = "Year is required.";
+    if (!formData.dailyRate.trim())
+      errors.dailyRate = "Daily rate is required.";
+    if (!formData.category.trim()) errors.category = "Category is required.";
+    if (!formData.city.trim()) errors.city = "City is required.";
+    if (formData.images.length === 0)
+      errors.images = "Please upload at least one image.";
+
+    setError(errors);
+    return Object.keys(errors).length === 0; 
   };
 
-  console.log(location);
-
-  // openDatabase();
-  const { db } = useDatabase();
-
-  const HandlSubmit = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(formData);
 
+    // Validate form
+    if (!validateForm()) {
+      toast.error("Please fill all required fields.");
+      return;
+    }
     const user = {
       id: Date.now(),
       name: "salah",
       cars: [formData],
       location,
     };
+    toast.success("Your car add successfuly!", {
+      position: "top-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "colored",
+    });
     setFormData({
       id: Date.now(),
       make: "",
@@ -135,6 +180,7 @@ const RentMyCar = () => {
   return (
     <>
       <Sidebar active="rent" />
+      <ToastContainer />
       <div className="min-h-screen bg-gradient-to-br ml-[260px] bg-white via-indigo-100 to-indigo-100 p-6">
         <Card className="max-w-4xl mx-auto">
           <CardHeader className="space-y-1">
@@ -146,7 +192,7 @@ const RentMyCar = () => {
             </p>
           </CardHeader>
           <CardContent>
-            <form className="space-y-6" onSubmit={HandlSubmit}>
+            <form className="space-y-6" onSubmit={handleSubmit}>
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-700">
@@ -161,6 +207,9 @@ const RentMyCar = () => {
                     className="w-full rounded-lg border border-gray-300 p-3 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                     placeholder="e.g., Toyota"
                   />
+                  {error.make && (
+                    <p className="text-sm text-red-500">{error.make}</p>
+                  )}
                   <datalist id="brand" name="carType">
                     {brands.map((brand) => (
                       <option key={brand} value={brand} />
@@ -179,6 +228,9 @@ const RentMyCar = () => {
                     className="w-full rounded-lg border border-gray-300 p-3 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                     placeholder="e.g., Camry"
                   />
+                  {error.model && (
+                    <p className="text-sm text-red-500">{error.model}</p>
+                  )}
                 </div>
               </div>
 
@@ -195,6 +247,9 @@ const RentMyCar = () => {
                     className="w-full rounded-lg border border-gray-300 p-3 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                     placeholder="e.g., 2022"
                   />
+                  {error.year && (
+                    <p className="text-sm text-red-500">{error.year}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-700">
@@ -213,6 +268,9 @@ const RentMyCar = () => {
                       placeholder="0.00"
                     />
                   </div>
+                  {error.dailyRate && (
+                    <p className="text-sm text-red-500">{error.dailyRate}</p>
+                  )}
                 </div>
               </div>
 
@@ -233,6 +291,9 @@ const RentMyCar = () => {
                     </option>
                   ))}
                 </select>
+                {error.category && (
+                  <p className="text-sm text-red-500">{error.category}</p>
+                )}
               </div>
 
               <div className="space-y-3">
@@ -304,16 +365,24 @@ const RentMyCar = () => {
                 </label>
                 <div className="flex gap-2">
                   <input
-                    type="text"
+                    type="hidden"
                     name="location"
                     value={location.lat + "," + location.lng}
                     onChange={handleInputChange}
                     className="flex-1 rounded-lg border border-gray-300 p-3 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                     placeholder="Add location from map ('33.5731','-7.5898')"
                   />
+                  <input
+                    type="text"
+                    name="city"
+                    value={formData.city}
+                    onChange={handleInputChange}
+                    className="flex-1 rounded-lg border border-gray-300 p-3 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    placeholder="Add city"
+                  />
                   <button
                     type="button"
-                    onClick={DisplayMap}
+                    onClick={() => setShowMap(!showMap)}
                     className="rounded-lg bg-blue-600 px-4 text-white hover:bg-blue-700"
                   >
                     <a href="#map">
@@ -321,6 +390,9 @@ const RentMyCar = () => {
                     </a>
                   </button>
                 </div>
+                {error.city && (
+                  <p className="text-sm text-red-500">{error.city}</p>
+                )}
               </div>
 
               <div className="space-y-3">
@@ -340,10 +412,13 @@ const RentMyCar = () => {
                       className="hidden"
                       multiple
                       name="images"
-                      onChange={HandleImageChange}
+                      onChange={handleImageChange}
                     />
                   </label>
                 </div>
+                {error.images && (
+                  <p className="text-sm text-red-500">{error.images}</p>
+                )}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {formData.images.map((src, index) => (
                     <img

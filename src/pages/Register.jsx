@@ -111,7 +111,7 @@ const Register = () => {
               />
             </div>
 
-            <div>
+            {/* <div>
               <label className="block text-gray-700 text-sm font-semibold mb-2">
                 Phone Number
               </label>
@@ -123,7 +123,7 @@ const Register = () => {
                 value={FormData.phoneNumber}
                 onChange={HandlChange}
               />
-            </div>
+            </div> */}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>

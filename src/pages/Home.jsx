@@ -1,10 +1,12 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import Header from "../components/layout/Header";
-import { Map } from "lucide-react";
+import { Map, User } from "lucide-react";
 import MapUser from "../components/map/MapUser";
 import useDatabase from "../hooks/useDatabase";
 import { auth } from "../config/config.firebase";
+import { Riple } from "react-loading-indicators";
+import { useSelector } from "react-redux";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -14,62 +16,43 @@ const Home = () => {
     returnDate: "",
     carType: "all",
   });
+  const carTypes = useSelector((state) => state.category);
   const { users, cars } = useDatabase();
   const [showMap, setShowMap] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [filterCars, setFilterCars] = useState(null);
 
   const DisplayMap = () => {
     setShowMap(!showMap);
   };
   const user = auth.currentUser;
   console.log(user);
-  const CheckUserIn = (id) => {
+  const CheckUserIn = () => {
     if (user == null) {
       navigate("/login");
-    } else navigate(`/booking/${id}`);
-  };
-
-  // const featuredCars = [
-  //   {
-  //     id: 1,
-  //     name: "Tesla Model S",
-  //     category: "Electric",
-  //     price: 150,
-  //     image: "https://images.unsplash.com/photo-1617788138017-80ad40651399",
-  //     specs: ["Range: 400mi", "0-60: 2.3s", "Top Speed: 200mph"],
-  //     features: ["Autopilot", "Premium Sound", "Wireless Charging"],
-  //     availability: "Available",
-  //     rating: 4.9,
-  //   },
-  //   {
-  //     id: 2,
-  //     name: "BMW M4 Competition",
-  //     category: "Sports",
-  //     price: 200,
-  //     image: "https://images.unsplash.com/photo-1617814076367-b759c7d7e738",
-  //     specs: ["Power: 503hp", "0-60: 3.8s", "Twin-Turbo"],
-  //     features: ["Sport Seats", "Carbon Fiber", "M Drive"],
-  //     availability: "Available",
-  //     rating: 4.8,
-  //   },
-  //   {
-  //     id: 3,
-  //     name: "Range Rover Sport",
-  //     category: "SUV",
-  //     price: 180,
-  //     image: "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6",
-  //     specs: ["Luxury Interior", "Off-road Ready", "Adaptive Suspension"],
-  //     features: ["Panoramic Roof", "360° Camera", "Air Suspension"],
-  //     availability: "Reserved",
-  //     rating: 4.7,
-  //   },
-  // ];
-  const ChoseCategory = (type) => {
-    if (type == "Electric"){
-      const Dcars = cars.filter((car)=>car.category == "Electric")
     }
   };
-  
-  const carTypes = ["All", "Electric", "Sports", "SUV", "Luxury", "Economy"];
+
+  useEffect(() => {
+    if (users.length > 0 && cars.length > 0) {
+      setLoading(false);
+      // const foundCar = users.flatMap((user) => user.cars).filter((car) => car.category === "Sports");
+      // setFilterCars(foundCar)
+      // console.log(filterCars);
+    }
+  }, [users, cars]);
+  const ChoseCategory = (type) => {
+    if (type === "all") {
+      setFilterCars(users.flatMap((user) => user.cars));
+    } else {
+      const filtered = users
+        .flatMap((user) => user.cars)
+        .filter((car) => car.category === type);
+      setFilterCars(filtered);
+    }
+  };
+
+  // const carTypes = ["All", "Electric", "Sports", "SUV", "Luxury", "Economy"];
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -195,10 +178,16 @@ const Home = () => {
       {/* Car Type Filter */}
       <div className="max-w-7xl mx-auto px-4 mb-12">
         <div className="flex overflow-x-auto space-x-4 py-4">
-          {carTypes.map((type) => (
+          <button
+            onClick={() => ChoseCategory("all")}
+            className="px-6 py-2 bg-white rounded-full shadow-md hover:bg-blue-600 hover:text-white transition-colors"
+          >
+            All
+          </button>
+          {carTypes.map((type, index) => (
             <button
-              key={type}
-              onClick={ChoseCategory}
+              key={index}
+              onClick={() => ChoseCategory(type)}
               className="px-6 py-2 bg-white rounded-full shadow-md hover:bg-blue-600 hover:text-white transition-colors"
             >
               {type}
@@ -210,8 +199,21 @@ const Home = () => {
       {/* Featured Cars Section */}
       <div className="max-w-7xl mx-auto px-4 mb-12">
         <h2 className="text-2xl font-bold mb-6">Featured Vehicles</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {users &&
+        <div
+          className={
+            loading
+              ? ""
+              : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          }
+        >
+          {loading ? (
+            <div className="min-h-screen w-full flex items-center justify-center ">
+              <div className="flex flex-col items-center">
+                <Riple color="#18a1fe" size="large" text="" textColor="" />
+              </div>
+            </div>
+          ) : (
+            users &&
             users.map((user) =>
               user.cars.map((car) => (
                 <div
@@ -220,18 +222,18 @@ const Home = () => {
                 >
                   <div className="relative h-48 overflow-hidden">
                     <img
-                      src="https://images.unsplash.com/photo-1617788138017-80ad40651399"
-                      alt={car.name}
+                      src={car.images[0]}
+                      alt={car.make}
                       className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
                     />
                     <div
                       className={`absolute top-4 right-4 px-3 py-1 rounded-full text-sm ${
-                        car.available === "Available"
+                        car.available
                           ? "bg-green-500 text-white"
                           : "bg-red-500 text-white"
                       }`}
                     >
-                      {car.available}
+                      {car.available ? "available" : "reserved"}
                     </div>
                   </div>
                   <div className="p-6">
@@ -250,13 +252,7 @@ const Home = () => {
                         </span>
                         <span className="text-gray-500 text-sm">/day</span>
                         <div className="flex items-center mt-1">
-                          <svg
-                            className="w-4 h-4 text-yellow-400"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                          </svg>
+                          <User />
                           <span className="text-sm text-gray-600 ml-1">
                             {user.name}
                           </span>
@@ -312,12 +308,13 @@ const Home = () => {
                     </div>
 
                     <div className="flex space-x-2">
-                      <button
-                        onClick={() => CheckUserIn(car.id)}
-                        className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                      <Link
+                        to={`/booking/${car.id}`}
+                        onClick={CheckUserIn}
+                        className="flex-1 bg-blue-600 text-white text-center py-2 rounded-lg hover:bg-blue-700 transition-colors"
                       >
                         Book Now
-                      </button>
+                      </Link>
                       <button
                         onClick={CheckUserIn}
                         className="flex-1 bg-gray-100 text-gray-800 py-2 rounded-lg hover:bg-gray-200 transition-colors"
@@ -328,7 +325,8 @@ const Home = () => {
                   </div>
                 </div>
               ))
-            )}
+            )
+          )}
         </div>
       </div>
 

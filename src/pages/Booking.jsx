@@ -1,44 +1,138 @@
 import { useParams } from "react-router-dom";
 import useDatabase from "../hooks/useDatabase";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Riple } from "react-loading-indicators";
+import { ToastContainer, toast } from "react-toastify";
+import { addBook } from "../database/Database";
+import { auth } from "../config/config.firebase";
+import useAuth from "../hooks/useAuth";
 
 const Booking = () => {
   const { CarId } = useParams();
   const { db, users, cars } = useDatabase();
-  const fCar = users.flatMap((user) => user.cars).find((car) => parseInt(car.id) === parseInt(CarId));
-  console.log(fCar)
+  const [bookData, setBookData] = useState({
+    pickupDate: "",
+    returnDate: "",
+    status:"pending",
+    car: null,
+    total: 0,
+    userEmail: null, 
+    phone: ""
+  });
+  const user = useAuth();
+  console.log(user?.email)
+
+  const [pickupDate, setPickupDate] = useState("");
+  const [returnDate, setReturnDate] = useState("");
+  const [phone , setPhone] = useState("")
+  const [loading, setLoading] = useState(true);
+  const [fCar, setFCar] = useState(null);
+  const [daysDifference, setDaysDifference] = useState(1);
+  const [total, setTotal] = useState(0);
+
+  // Handle pickup date change
+  const handlePickupDateChange = (e) => {
+    setPickupDate(e.target.value);
+    calculateDifference(e.target.value, returnDate);
+  };
+
+  // Handle return date change
+  const handleReturnDateChange = (e) => {
+    setReturnDate(e.target.value);
+    calculateDifference(pickupDate, e.target.value);
+  };
+
+  const calculateDifference = (pickup, returnDate) => {
+    if (pickup && returnDate) {
+      const pickupTime = new Date(pickup).getTime();
+      const returnTime = new Date(returnDate).getTime();
+
+      if (returnTime >= pickupTime) {
+        const differenceInDays = Math.ceil(
+          (returnTime - pickupTime) / (1000 * 60 * 60 * 24)
+        );
+        setDaysDifference(differenceInDays);
+      } else {
+        setDaysDifference(0);
+        toast.error("Return date cannot be before pickup date.");
+      }
+    } else {
+      setDaysDifference(1);
+    }
+  };
+
   useEffect(() => {
-    console.log(CarId);
-    console.log(users);
-    console.log(cars);
-    const iscar = users
-      .find((user) =>
-        user.cars.some((car) => parseInt(car.id) === parseInt(CarId))
-      )
-      ?.cars.find((car) => parseInt(car.id) === parseInt(CarId));
-    console.log(iscar);
-    console.log(iscar);
-    const Wcars = [iscar];
-    console.log(Wcars);
+    if (users.length > 0 && cars.length > 0) {
+      const foundCar = users
+        .flatMap((user) => user.cars)
+        .find((car) => parseInt(car.id) === parseInt(CarId));
+      setFCar(foundCar);
+      setLoading(false);
+    }
+  }, [CarId, users, cars]);
 
-    console.log(Wcars);
+  useEffect(() => {
+    if (fCar && daysDifference > 0) {
+      const totalCost = fCar.dailyRate * daysDifference;
+      setTotal(totalCost);
+    }
+  }, [fCar, daysDifference]);
 
-    Wcars.map((wc) => {
-      console.log(wc);
-    });
-    // for (let key in iscar) {
-    //   console.log(iscar[key]);
-    // }
-  }, [CarId, db]);
+  // Update bookData whenever relevant data changes
+  useEffect(() => {
+    setBookData((prev) => ({
+      ...prev,
+      pickupDate,
+      returnDate,
+      car: fCar,
+      status:"pending",
+      total,
+      userEmail: user?.email,
+      phone
+    }));
+  }, [pickupDate, returnDate, fCar, total]);
+
+  // Handle booking confirmation
+  const handleConfirmBooking = () => {
+    if (!pickupDate || !returnDate || !fCar || total <= 0) {
+      toast.error("Please fill all required fields and ensure the total is valid.");
+      return;
+    }
+
+    console.log("Booking Data:", bookData);
+
+
+    toast.success("Booking confirmed! Data sent to the admin dashboard.");
+    addBook(db,bookData)
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="flex flex-col items-center">
+          <Riple color="#18a1fe" size="large" text="" textColor="" />
+        </div>
+      </div>
+    );
+  }
+
+  // Show error if car is not found
+  if (!fCar) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="text-lg font-semibold text-red-600">Car not found!</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100 py-12">
+      <ToastContainer />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Car Details Header */}
         <div className="mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            {/* {cars.find((car) => car.id === parseInt(CarId)).make} */}
-            {fCar.make} {fCar.model} {fCar.year}
+            {fCar?.make} {fCar?.model} {fCar?.year}
           </h1>
           <div className="flex items-center space-x-4 text-gray-600">
             <span className="flex items-center">
@@ -94,29 +188,26 @@ const Booking = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Car Image Gallery */}
-          <div className="space-y-6">
-            <div className="aspect-w-16 aspect-h-9 rounded-3xl overflow-hidden shadow-xl">
-              <img
-                src="https://images.unsplash.com/photo-1555215695-3004980ad54e"
-                alt="Mercedes S-Class"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              {[1, 2, 3].map((item) => (
-                <div
-                  key={item}
-                  className="aspect-video rounded-xl overflow-hidden shadow-sm cursor-pointer"
-                >
+          {fCar.images.map((image, index) => (
+            <div key={index} className="space-y-6">
+              <div className="aspect-w-16 aspect-h-9 rounded-3xl overflow-hidden shadow-xl">
+                <img
+                  src={image}
+                  alt={`${fCar.make} ${fCar.model}`}
+                  className="w-full h-[500px] object-cover"
+                />
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="aspect-video rounded-xl overflow-hidden shadow-sm cursor-pointer">
                   <img
-                    src="https://images.unsplash.com/photo-1555215695-3004980ad54e"
-                    alt="Mercedes S-Class"
+                    src={image}
+                    alt={`${fCar.make} ${fCar.model}`}
                     className="w-full h-full object-cover"
                   />
                 </div>
-              ))}
+              </div>
             </div>
-          </div>
+          ))}
 
           {/* Booking Form */}
           <div className="bg-white rounded-3xl shadow-xl p-8">
@@ -124,13 +215,10 @@ const Booking = () => {
               {/* Pricing Header */}
               <div className="border-b pb-6">
                 <div className="flex items-baseline space-x-2">
-                  <span className="text-3xl font-bold text-blue-600">$299</span>
-                  <span className="text-gray-500">/ day</span>
-                </div>
-                <div className="flex items-center space-x-2 mt-2">
-                  <span className="text-sm text-gray-500">
-                    Minimum 2 days rental
+                  <span className="text-3xl font-bold text-blue-600">
+                    ${fCar.dailyRate}
                   </span>
+                  <span className="text-gray-500">/ day</span>
                 </div>
               </div>
 
@@ -142,16 +230,19 @@ const Booking = () => {
                       Pickup Date
                     </label>
                     <input
-                      type="date"
+                      type="datetime-local"
+                      onChange={handlePickupDateChange}
                       className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
+                  
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Return Date
                     </label>
                     <input
-                      type="date"
+                      type="datetime-local"
+                      onChange={handleReturnDateChange}
                       className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
@@ -161,48 +252,35 @@ const Booking = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Pickup Location
                   </label>
-                  <select className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    <option>City Center Branch</option>
-                    <option>Airport Terminal</option>
-                    <option>Downtown Office</option>
-                  </select>
+                  <input
+                    type="text"
+                    value={fCar.city}
+                    readOnly
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300"
+                  />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Return Location
                   </label>
-                  <select className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    <option>Same as Pickup Location</option>
-                    <option>City Center Branch</option>
-                    <option>Airport Terminal</option>
-                  </select>
+                  <input
+                    type="text"
+                    value={fCar.city}
+                    readOnly
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300"
+                  />
                 </div>
-
-                <div className="space-y-4">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Add Insurance
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Number Phone
                   </label>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <button className="p-4 border rounded-lg hover:border-blue-500 transition-colors">
-                      <div className="text-left">
-                        <div className="font-medium">Basic</div>
-                        <div className="text-sm text-gray-500">$29/day</div>
-                      </div>
-                    </button>
-                    <button className="p-4 border rounded-lg hover:border-blue-500 transition-colors border-blue-500 bg-blue-50">
-                      <div className="text-left">
-                        <div className="font-medium">Premium</div>
-                        <div className="text-sm text-gray-500">$49/day</div>
-                      </div>
-                    </button>
-                    <button className="p-4 border rounded-lg hover:border-blue-500 transition-colors">
-                      <div className="text-left">
-                        <div className="font-medium">None</div>
-                        <div className="text-sm text-gray-500">No coverage</div>
-                      </div>
-                    </button>
-                  </div>
+                  <input
+                    type="text"
+                    placeholder="06 00 00 00 00"
+                    onChange={(e)=>setPhone(e.target.value)}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300"
+                  />
                 </div>
               </div>
 
@@ -210,21 +288,22 @@ const Booking = () => {
               <div className="bg-gray-50 rounded-xl p-6">
                 <div className="space-y-4">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">$299 × 3 days</span>
-                    <span className="font-medium">$897.00</span>
+                    <span className="text-gray-600">Daily Price</span>
+                    <span className="font-medium">${fCar.dailyRate}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Insurance</span>
-                    <span className="font-medium">$147.00</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Taxes & Fees</span>
-                    <span className="font-medium">$128.50</span>
+                    <span className="text-gray-600">
+                      ${fCar.dailyRate} ×{" "}
+                      {daysDifference === 1
+                        ? `${daysDifference} day`
+                        : `${daysDifference} days`}
+                    </span>
+                    <span className="font-medium">${total}</span>
                   </div>
                   <div className="border-t pt-4">
                     <div className="flex justify-between font-bold">
                       <span>Total</span>
-                      <span className="text-blue-600">$1,172.50</span>
+                      <span className="text-blue-600">${total}</span>
                     </div>
                   </div>
                 </div>
@@ -242,7 +321,10 @@ const Booking = () => {
                   </select>
                 </div>
 
-                <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-6 rounded-xl transition-all transform hover:scale-[1.02]">
+                <button
+                  onClick={handleConfirmBooking}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-6 rounded-xl transition-all transform hover:scale-[1.02]"
+                >
                   Confirm Booking
                 </button>
 

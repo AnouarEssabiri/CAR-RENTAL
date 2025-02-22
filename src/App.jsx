@@ -16,6 +16,9 @@ import CarsInfo from "./pages/test/CarsInfo";
 import MapUser from "./components/map/MapUser";
 import ListMyCars from "./pages/ListMyCars";
 import Booking from "./pages/Booking";
+import ValidateBooking from "./pages/ValidateBooking";
+import AdminLogin from "./pages/MemberLogin";
+import RequestTest from "./pages/test/RequestTest";
 
 function App() {
   return (
@@ -37,6 +40,9 @@ function App() {
       <Route path="/mapuser" element={<MapUser />} />
       <Route path="/carinfo" element={<CarsInfo />} />
       <Route path="/ListMyCars" element={<ListMyCars />} />
+      <Route path="/validate_booking" element={<ValidateBooking />} />
+      <Route path="/AdminLogin" element={<AdminLogin />} />
+      <Route path="/RequestTest" element={<RequestTest />} />
     </Routes>
   );
 }

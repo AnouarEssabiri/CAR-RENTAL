@@ -14,7 +14,7 @@ const center = {
 
 const Map = (props) => {
   const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: 'AIzaSyCnrK9QY5GOJEyvzfTHxMzpBN8obW_Fv28',
+    googleMapsApiKey : process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
   });
 
   const [marker, setMarker] = useState(null);
