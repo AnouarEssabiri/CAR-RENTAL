@@ -1,9 +1,18 @@
 import { Car } from "lucide-react";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 const Sidebar = (props) => {
-  // const whoactive = props.active == "rent" ? "bg-blue-800/30 text-blue-400" : ""
+  const [memberName, setMemberName] = useState("")
+  
+  useEffect(() => {
+    const memberData = JSON.parse(localStorage.getItem("member"));
+    if (memberData) {
+      setMemberName(memberData.username);
+      console.log(memberData);
+    }
+  }, []);
+
 
   return (
     <div className="flex">
@@ -11,7 +20,7 @@ const Sidebar = (props) => {
       <div className="bg-gray-900 text-white w-64 min-h-screen p-6 fixed">
         <div className="mb-8">
           <h2 className="text-2xl font-bold">Luxury Rentals</h2>
-          <p className="text-gray-400 text-sm">Dashboard</p>
+          <p className="text-gray-400 text-sm">{props.active}</p>
         </div>
 
         <nav className="space-y-4">
@@ -70,7 +79,7 @@ const Sidebar = (props) => {
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-2xl font-bold">Welcome back, John</h1>
+            <h1 className="text-2xl font-bold">Welcome back, {memberName}</h1>
             <p className="text-gray-500">
               Your recent activities and statistics
             </p>
@@ -94,7 +103,7 @@ const Sidebar = (props) => {
             <div className="flex items-center space-x-2">
               <div className="w-10 h-10 bg-blue-500 rounded-full"></div>
               <div>
-                <p className="font-medium">John Doe</p>
+                <p className="font-medium">{memberName}</p>
                 <p className="text-sm text-gray-500">Premium Member</p>
               </div>
             </div>

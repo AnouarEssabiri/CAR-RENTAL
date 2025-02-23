@@ -2,24 +2,35 @@ import React, { useEffect, useState } from "react";
 import useDatabase from "../hooks/useDatabase";
 import Sidebar from "../components/layout/Sidebar.jsx";
 import { Riple } from "react-loading-indicators";
-
-// import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
+import { Link } from "react-router-dom";
 
 const ListMyCars = () => {
-  // Sample data with enhanced structure
-  const { users, cars } = useDatabase();
+  const { members } = useDatabase(); // Destructure members from useDatabase
   const [loading, setLoading] = useState(true);
+  const [myCars, setMyCars] = useState([]); // State to store the logged-in member's cars
+
   useEffect(() => {
-    // Simulate data loading
-    if (users.length > 0 && cars.length > 0) {
-      setLoading(false); // Set loading to false when data is ready
+    // Retrieve member data from localStorage
+    const memberData = JSON.parse(localStorage.getItem("member"));
+    if (memberData && members.length > 0) {
+      // Find the member whose ID matches the one in localStorage
+      const loggedInMember = members.find(
+        (member) => member.id === memberData.id
+      );
+
+      if (loggedInMember) {
+        // Set the cars of the logged-in member
+        setMyCars(loggedInMember.cars);
+      }
+
+      setLoading(false); // Data is ready
     }
-  }, [users, cars]);
-  console.log(users);
+  }, [members]); // Re-run when members data changes
+
   return (
     <>
       <Sidebar active="mycars" />
-      <div className="min-h-screen bg-gradient-to-br ml-[260px] from-gray-50 to-blue-50 p-8">
+      <div className="min-h-screen bg-gradient-to-br ml-[260px]  p-8">
         <div className="max-w-7xl mx-auto ">
           {/* Header */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
@@ -31,7 +42,7 @@ const ListMyCars = () => {
                 Manage your rental vehicles and view performance metrics
               </p>
             </div>
-            <button className="mt-4 md:mt-0 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg flex items-center">
+            <Link to="/RentMyCar" className="mt-4 md:mt-0 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg flex items-center">
               <svg
                 className="w-5 h-5 mr-2"
                 fill="none"
@@ -46,7 +57,7 @@ const ListMyCars = () => {
                 />
               </svg>
               Add New Vehicle
-            </button>
+            </Link>
           </div>
 
           {/* Filters */}
@@ -99,159 +110,139 @@ const ListMyCars = () => {
                 </div>
               </div>
             ) : (
-              users.map((user) =>
-                user.cars.map((car) => (
-                  <div
-                    key={user.id}
-                    className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow"
-                  >
-                    <div className="flex flex-col md:flex-row">
-                      {/* Car Image */}
-                      <div className="md:w-1/3">
-                        <img
-                          src={car.images[0]}
-                          alt={`${car.mark} ${user.model}`}
-                          className="w-full h-[48] md:h-[378px] object-cover rounded-t-xl md:rounded-l-xl md:rounded-tr-none"
-                        />
+              myCars.map((car) => (
+                <div
+                  key={car.id}
+                  className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow"
+                >
+                  <div className="flex flex-col md:flex-row">
+                    {/* Car Image */}
+                    <div className="md:w-1/3">
+                      <img
+                        src={car.car.images[0]}
+                        alt={`${car.car.make} ${car.car.model}`}
+                        className="w-full h-[48] md:h-[378px] object-cover rounded-t-xl md:rounded-l-xl md:rounded-tr-none"
+                      />
+                    </div>
+
+                    {/* Car Details */}
+                    <div className="p-6 flex-1">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <h3 className="text-xl font-bold">
+                            {car.car.make} {car.car.model} {car.car.year}
+                          </h3>
+                          <p className="text-gray-600 mt-1">{car.car.city}</p>
+                          <div className="flex items-center mt-2">
+                            <span className="text-blue-600 text-lg font-bold">
+                              ${car.car.dailyRate}
+                            </span>
+                            <span className="text-gray-500 ml-1">/ day</span>
+                          </div>
+                        </div>
+                        <span
+                          className={`px-3 py-1 rounded-full text-sm ${
+                            car.car.available
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {car.car.available ? "available" : "booked"}
+                        </span>
                       </div>
 
-                      {/* Car Details */}
-                      <div className="p-6 flex-1">
-                        <div className="flex justify-between items-start mb-4">
-                          <div>
-                            <h3 className="text-xl font-bold">
-                              {car.make} {car.model} {car.year}
-                            </h3>
-                            <p className="text-gray-600 mt-1">{car.city}</p>
-                            <div className="flex items-center mt-2">
-                              <span className="text-blue-600 text-lg font-bold">
-                                ${car.dailyRate}
+                      {/* Specs & Features */}
+                      <div className="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                          <p className="text-gray-500 text-sm mb-2">
+                            Specifications
+                          </p>
+                          <ul className="space-y-1">
+                            {car.car.specs.map((spec, index) => (
+                              <li key={index} className="text-sm">
+                                {spec}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div>
+                          <p className="text-gray-500 text-sm mb-2">Features</p>
+                          <div className="flex flex-wrap gap-2">
+                            {car.car.features.map((feature, index) => (
+                              <span
+                                key={index}
+                                className="text-xs bg-gray-100 px-2 py-1 rounded"
+                              >
+                                {feature}
                               </span>
-                              <span className="text-gray-500 ml-1">/ day</span>
-                            </div>
+                            ))}
                           </div>
-                          <span
-                            className={`px-3 py-1 rounded-full text-sm ${
-                              car.available === true
-                                ? "bg-green-100 text-green-800"
-                                : car.available === false
-                                ? "bg-red-100 text-red-800"
-                                : "bg-yellow-100 text-yellow-800"
-                            }`}
+                        </div>
+                      </div>
+
+                      {/* Stats */}
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                        <div>
+                          <p className="text-gray-500 text-sm">Category</p>
+                          <p className="font-medium">{car.car.category}</p>
+                        </div>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex items-center space-x-4 border-t pt-4">
+                        <button className="text-blue-600 hover:text-blue-700 flex items-center">
+                          <svg
+                            className="w-5 h-5 mr-2"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
                           >
-                            {car.available ? "available" : "booked"}
-                          </span>
-                        </div>
-
-                        {/* Specs & Features */}
-                        <div className="grid grid-cols-2 gap-4 mb-4">
-                          <div>
-                            <p className="text-gray-500 text-sm mb-2">
-                              Specifications
-                            </p>
-                            <ul className="space-y-1">
-                              {car.specs.map((spec, index) => (
-                                <li key={index} className="text-sm">
-                                  {spec}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                          <div>
-                            <p className="text-gray-500 text-sm mb-2">
-                              Features
-                            </p>
-                            <div className="flex flex-wrap gap-2">
-                              {car.features.map((feature, index) => (
-                                <span
-                                  key={index}
-                                  className="text-xs bg-gray-100 px-2 py-1 rounded"
-                                >
-                                  {feature}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Stats */}
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                          <div>
-                            <p className="text-gray-500 text-sm">Bookings</p>
-                            <p className="font-medium">{user.bookings}</p>
-                          </div>
-                          <div>
-                            <p className="text-gray-500 text-sm">Rating</p>
-                            <p className="font-medium flex items-center">
-                              ★ {user.name}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-gray-500 text-sm">Earnings</p>
-                            <p className="font-medium">${user.earnings}</p>
-                          </div>
-                          <div>
-                            <p className="text-gray-500 text-sm">Category</p>
-                            <p className="font-medium">{car.category}</p>
-                          </div>
-                        </div>
-
-                        {/* Actions */}
-                        <div className="flex items-center space-x-4 border-t pt-4">
-                          <button className="text-blue-600 hover:text-blue-700 flex items-center">
-                            <svg
-                              className="w-5 h-5 mr-2"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                              />
-                            </svg>
-                            Edit
-                          </button>
-                          <button className="text-red-600 hover:text-red-700 flex items-center">
-                            <svg
-                              className="w-5 h-5 mr-2"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                              />
-                            </svg>
-                            Delete
-                          </button>
-                          <button className="text-gray-600 hover:text-gray-800 flex items-center ml-auto">
-                            <svg
-                              className="w-5 h-5 mr-2"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                              />
-                            </svg>
-                            View Details
-                          </button>
-                        </div>
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                            />
+                          </svg>
+                          Edit
+                        </button>
+                        <button className="text-red-600 hover:text-red-700 flex items-center">
+                          <svg
+                            className="w-5 h-5 mr-2"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                            />
+                          </svg>
+                          Delete
+                        </button>
+                        <button className="text-gray-600 hover:text-gray-800 flex items-center ml-auto">
+                          <svg
+                            className="w-5 h-5 mr-2"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                          </svg>
+                          View Details
+                        </button>
                       </div>
                     </div>
                   </div>
-                ))
-              )
+                </div>
+              ))
             )}
           </div>
 

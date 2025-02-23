@@ -6,7 +6,7 @@ import { auth } from "../../config/config.firebase";
 const Header = () => {
   // const navigate = useNavigate();
   const user = auth.currentUser;
-  console.log(user)
+  console.log(user);
   // onAuthStateChanged(auth, (user) => {
   //   if (user) {
   //     console.log("User logged in:", user);
@@ -49,13 +49,22 @@ const Header = () => {
               >
                 Cars
               </Link>
+              {user && (
+                <Link
+                  to="/Mybooking"
+                  href="#"
+                  className="text-gray-700 hover:text-blue-600"
+                >
+                  Booking
+                </Link>
+              )}
               <a href="#" className="text-gray-700 hover:text-blue-600">
                 About
               </a>
               <a href="#" className="text-gray-700 hover:text-blue-600">
                 Contact
               </a>
-              {user == null  && (
+              {user == null && (
                 <div className="flex items-center space-x-4">
                   <Link
                     to="/login"

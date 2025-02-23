@@ -1,12 +1,21 @@
 import { useEffect, useState } from "react";
-import { getAllCars, getAllLocations, getAllUsers, getBookings, openDatabase, upgradeDatabase } from "../database/Database";
+import {
+  getAllCars,
+  getAllLocations,
+  getAllUsers,
+  getBookings,
+  getMembers,
+  openDatabase,
+  upgradeDatabase,
+} from "../database/Database";
 
 const useDatabase = () => {
   const [db, setDb] = useState(null);
   const [users, setUsers] = useState([]);
-  const [locations, SetLocations] = useState([]);
+  const [locations, setLocations] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [cars, setCars] = useState([]);
+  const [members, setMembers] = useState({});
   useEffect(() => {
     openDatabase("MyDatabase", 1, upgradeDatabase, (event) => {
       setDb(event.target.result);
@@ -15,6 +24,7 @@ const useDatabase = () => {
       fetchLocations(event.target.result); // Fetch locations when the database is opened successfully
       fetchBookings(event.target.result);
       fetchCars(event.target.result);
+      fetchMemebrs(event.target.result);
     });
   }, []);
   const fetchUsers = (db) => {
@@ -24,19 +34,24 @@ const useDatabase = () => {
   };
   const fetchLocations = (db) => {
     getAllLocations(db, (locations) => {
-      SetLocations(locations);
+      setLocations(locations);
     });
   };
   const fetchBookings = (db) => {
-    getBookings(db, (bookings)=>{
-      setBookings(bookings)
+    getBookings(db, (bookings) => {
+      setBookings(bookings);
     });
   };
   const fetchCars = (db) => {
     getAllCars(db, (cars) => {
       setCars(cars);
-    })
+    });
   };
-  return { db, users, locations, bookings, cars };
+  const fetchMemebrs = (db) => {
+    getMembers(db, (members) => {
+      setMembers(members);
+    });
+  };
+  return { db, users, locations, bookings, cars, members };
 };
 export default useDatabase;

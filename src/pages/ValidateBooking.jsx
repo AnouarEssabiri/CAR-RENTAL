@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { ChevronDown, ChevronUp, Search, Filter } from "lucide-react";
 import Sidebar from "../components/layout/Sidebar";
 import useDatabase from "../hooks/useDatabase";
+import NoRequestsMessage from "../components/ui/NoRequest";
 
 const ValidateBooking = () => {
   const [selectedBooking, setSelectedBooking] = useState(null);
@@ -171,23 +172,25 @@ const ValidateBooking = () => {
           </div>
 
           <div className="space-y-4">
-            {bookings
-              .filter(
-                (booking) =>
-                  filterStatus === "all" || booking.status === filterStatus
-              )
-              .map((booking) => (
-                <BookingCard
-                  key={booking.id}
-                  booking={booking}
-                  isExpanded={selectedBooking === booking.id}
-                  onToggle={() =>
-                    setSelectedBooking(
-                      selectedBooking === booking.id ? null : booking.id
-                    )
-                  }
-                />
-              ))}
+            {bookings.length > 0 ? (
+              bookings
+                .filter(
+                  (booking) =>
+                    filterStatus === "all" || booking.status === filterStatus
+                )
+                .map((booking) => (
+                  <BookingCard
+                    key={booking.id}
+                    booking={booking}
+                    isExpanded={selectedBooking === booking.id}
+                    onToggle={() =>
+                      setSelectedBooking(
+                        selectedBooking === booking.id ? null : booking.id
+                      )
+                    }
+                  />
+                ))
+            ) : <NoRequestsMessage />}
           </div>
         </div>
       </div>

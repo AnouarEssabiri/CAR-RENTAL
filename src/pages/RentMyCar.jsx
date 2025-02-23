@@ -9,7 +9,7 @@ import { Camera, Map, Plus, X } from "lucide-react";
 import Sidebar from "../components/layout/Sidebar.jsx";
 import Location from "../components/map/Map.jsx";
 import { useSelector } from "react-redux";
-import { addUser } from "../database/Database.jsx";
+import { addCar, addUser } from "../database/Database.jsx";
 import useDatabase from "../hooks/useDatabase.jsx";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
@@ -17,7 +17,6 @@ import "react-toastify/dist/ReactToastify.css";
 
 const RentMyCar = () => {
   const [formData, setFormData] = useState({
-    id: Date.now(),
     make: "",
     model: "",
     year: "",
@@ -39,7 +38,19 @@ const RentMyCar = () => {
   const features = useSelector((state) => state.feature);
   const brands = useSelector((state) => state.brand);
   const categories = useSelector((state) => state.category);
-  const {db} = useDatabase();
+  const [membername, setMembername] = useState(null);
+  const [memberId, setMemberId] = useState(null);
+  useEffect(() => {
+    const memberData = JSON.parse(localStorage.getItem("member"));
+    if (memberData) {
+      setMembername(memberData);
+      setMemberId(memberData.id);
+      console.log(memberData);
+    }
+  }, []);
+  const { db, members } = useDatabase();
+  console.log(members);
+  console.log(memberId);
 
   const handleImageChange = (e) => {
     const files = e.target.files;
@@ -53,7 +64,6 @@ const RentMyCar = () => {
       return;
     }
 
-    // Convert files to Base64
     const promises = Array.from(files).map((file) => {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -63,14 +73,13 @@ const RentMyCar = () => {
       });
     });
 
-    // Process all files
     Promise.all(promises)
       .then((base64Images) => {
         setFormData((prev) => ({
           ...prev,
-          images: [...prev.images, ...base64Images], // Append new Base64 images
+          images: [...prev.images, ...base64Images],
         }));
-        setError((prev) => ({ ...prev, images: "" })); // Clear image error
+        setError((prev) => ({ ...prev, images: "" })); 
         toast.success("Images uploaded successfully!");
       })
       .catch((error) => {
@@ -81,6 +90,7 @@ const RentMyCar = () => {
         }));
       });
   };
+  
 
   const handleAddSpec = () => {
     if (formData.newSpec.trim()) {
@@ -132,7 +142,7 @@ const RentMyCar = () => {
       errors.images = "Please upload at least one image.";
 
     setError(errors);
-    return Object.keys(errors).length === 0; 
+    return Object.keys(errors).length === 0;
   };
 
   const handleSubmit = (e) => {
@@ -149,6 +159,10 @@ const RentMyCar = () => {
       cars: [formData],
       location,
     };
+    const newCar = {
+      id: Date.now(),
+      car: {...formData,location},
+    };
     toast.success("Your car add successfuly!", {
       position: "top-right",
       autoClose: 3000,
@@ -160,7 +174,6 @@ const RentMyCar = () => {
       theme: "colored",
     });
     setFormData({
-      id: Date.now(),
       make: "",
       model: "",
       year: "",
@@ -173,13 +186,13 @@ const RentMyCar = () => {
       city: "",
       available: true,
     });
-
+    addCar(db, memberId, newCar);
     addUser(db, user);
   };
 
   return (
     <>
-      <Sidebar active="rent" />
+      <Sidebar member={membername} active="rent" />
       <ToastContainer />
       <div className="min-h-screen bg-gradient-to-br ml-[260px] bg-white via-indigo-100 to-indigo-100 p-6">
         <Card className="max-w-4xl mx-auto">

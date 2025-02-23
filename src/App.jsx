@@ -19,6 +19,9 @@ import Booking from "./pages/Booking";
 import ValidateBooking from "./pages/ValidateBooking";
 import AdminLogin from "./pages/MemberLogin";
 import RequestTest from "./pages/test/RequestTest";
+import PrivateRoute from "./pages/PrivateRoute";
+import MemberRegister from "./pages/MemberRegister";
+import SearchTest from "./pages/test/SearchTest";
 
 function App() {
   return (
@@ -26,8 +29,7 @@ function App() {
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/RentMyCar" element={<RentMyCar />} />
+      <Route path="/Mybooking" element={<Dashboard />} />
       <Route path="/cars" element={<Cars />} />
       <Route path="/order" element={<Order />} />
       <Route path="/payment" element={<Payment />} />
@@ -39,9 +41,14 @@ function App() {
       <Route path="/map" element={<Map />} />
       <Route path="/mapuser" element={<MapUser />} />
       <Route path="/carinfo" element={<CarsInfo />} />
-      <Route path="/ListMyCars" element={<ListMyCars />} />
-      <Route path="/validate_booking" element={<ValidateBooking />} />
-      <Route path="/AdminLogin" element={<AdminLogin />} />
+      <Route path="/Member_login" element={<AdminLogin />} />
+      <Route path="/Member_register" element={<MemberRegister />} />
+      <Route path="/search_test" element={<SearchTest />} />
+      <Route element={<PrivateRoute />}>
+        <Route path="/dashboard" element={<ValidateBooking />} />
+        <Route path="/ListMyCars" element={<ListMyCars />} />
+        <Route path="/RentMyCar" element={<RentMyCar />} />
+      </Route>
       <Route path="/RequestTest" element={<RequestTest />} />
     </Routes>
   );

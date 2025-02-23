@@ -2,6 +2,9 @@ import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../config/config.firebase";
 import { useState } from "react";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { ToastContainer, toast } from "react-toastify";
+import { addUser } from "../database/Database";
+import useDatabase from "../hooks/useDatabase";
 
 
 const Register = () => {
@@ -13,6 +16,7 @@ const Register = () => {
     password: "",
     confirmPassword: "",
   });
+  const {db} = useDatabase();
   const googleProvider = new GoogleAuthProvider();
 
   const HandlChange = (e) => {
@@ -30,21 +34,51 @@ const Register = () => {
 
   const SignUp = async (e) => {
     e.preventDefault();
-    const { email, password} = FormData;
+    const { email, password, firstName, lastName, phoneNumber} = FormData;
     try {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
         password
       );
-      console.log("User signed up:", userCredential.user);
-    } catch (error) {
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          id: Date.now(),
+          email: userCredential.user.email,
+          username: `${FormData.firstName} ${FormData.lastName}`,
+        })
+      );
+      const user = {
+        id: Date.now(),
+        username: `${FormData.firstName} ${FormData.lastName}`,
+        firstName,
+        lastName,
+        email,
+        phoneNumber,
+      };
+      addUser(db, user);
+      toast.success("Account created successfully!");
+      navigate("/");
+    }  catch (error) {
       console.error("Error signing up:", error.message);
+      if (error.code === "auth/invalid-email") {
+        console.error("Invalid email address");
+      } else if (error.code === "auth/wrong-password") {
+        console.error("Incorrect password");
+      } else if (error.code === "auth/user-not-found") {
+        console.error("Email address not found");
+      } else if (error.code === "auth/email-already-in-use") {
+        setError((prev) => ({ ...prev, email: "Email already in use." }));
+      } else {
+        toast.error("An error occurred. Please try again.");
+      }
     }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 to-gray-900 flex items-center justify-center p-4">
+      <ToastContainer />
       <div className="w-full max-w-6xl flex rounded-2xl shadow-2xl overflow-hidden bg-white">
         <div className="hidden md:block md:w-1/2 relative">
           <div className="absolute inset-0 bg-gradient-to-t from-blue-900/80 to-transparent"></div>
@@ -111,19 +145,19 @@ const Register = () => {
               />
             </div>
 
-            {/* <div>
+            <div>
               <label className="block text-gray-700 text-sm font-semibold mb-2">
                 Phone Number
               </label>
               <input
                 type="text"
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="+1 234 567 890"
+                placeholder="06 00 00 00 00"
                 name="phoneNumber"
                 value={FormData.phoneNumber}
                 onChange={HandlChange}
               />
-            </div> */}
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>

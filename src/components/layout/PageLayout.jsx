@@ -1,12 +1,20 @@
-import React from 'react';
-import Sidebar from './Sidebar';
+import React from "react";
+import Sidebar from "./Sidebar";
 
 const PageLayout = ({ children, title, subtitle, activePage }) => {
+  // const [membername, setMembername] = useState(null);
+
+  // useEffect(() => {
+  //   const memberData = JSON.parse(localStorage.getItem("member"));
+  //   if (memberData) {
+  //     setMembername(memberData);
+  //   }
+  // }, []);
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="flex">
         <Sidebar activePage={activePage} />
-        
+
         {/* Main Content */}
         <div className="ml-64 flex-1 p-8">
           {/* Header */}

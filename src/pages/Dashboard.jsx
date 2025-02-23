@@ -1,16 +1,18 @@
+import Header from "../components/layout/Header";
 import Sidebar from "../components/layout/Sidebar";
 
 const Dashboard = () => {
   return (
     <>
-    <Sidebar active="dashboard" />
+    {/* <Sidebar active="dashboard" /> */}
+    <Header />
     <div className="min-h-screen bg-gray-100">
       {/* Sidebar + Main Content Container */}
       <div className="flex">
         {/* Sidebar */}
 
         {/* Main Content */}
-        <div className="ml-64 flex-1 p-8">
+        <div className=" flex-1 p-8">
           {/* Header */}
 
           {/* Stats Cards */}

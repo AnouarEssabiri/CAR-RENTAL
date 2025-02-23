@@ -12,12 +12,11 @@ const Home = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useState({
     location: "",
-    pickupDate: "",
-    returnDate: "",
+    brandCar: "",
     carType: "all",
   });
   const carTypes = useSelector((state) => state.category);
-  const { users, cars } = useDatabase();
+  const { members } = useDatabase();
   const [showMap, setShowMap] = useState(false);
   const [loading, setLoading] = useState(true);
   const [filterCars, setFilterCars] = useState(null);
@@ -34,23 +33,32 @@ const Home = () => {
   };
 
   useEffect(() => {
-    if (users.length > 0 && cars.length > 0) {
+    if (members.length > 0) {
       setLoading(false);
-      // const foundCar = users.flatMap((user) => user.cars).filter((car) => car.category === "Sports");
-      // setFilterCars(foundCar)
-      // console.log(filterCars);
     }
-  }, [users, cars]);
+  }, [members]);
+  useEffect(() => {
+    ChoseCategory("all");
+  }, []);
   const ChoseCategory = (type) => {
-    if (type === "all") {
-      setFilterCars(users.flatMap((user) => user.cars));
+    // Check if members is an array
+    if (Array.isArray(members)) {
+      if (type === "all") {
+        setFilterCars(members.flatMap((member) => member.cars));
+      } else {
+        const filtered = members
+          .flatMap((member) => member.cars)
+          .filter((car) => car.category === type);
+        setFilterCars(filtered);
+      }
     } else {
-      const filtered = users
-        .flatMap((user) => user.cars)
-        .filter((car) => car.category === type);
-      setFilterCars(filtered);
+      console.error("members is not an array:", members);
     }
   };
+  
+
+  console.log(filterCars);
+  console.log(members);
 
   // const carTypes = ["All", "Electric", "Sports", "SUV", "Luxury", "Economy"];
 
@@ -97,7 +105,7 @@ const Home = () => {
             <div className="bg-white p-6 rounded-xl shadow-lg max-w-4xl">
               <form
                 onSubmit={handleSearch}
-                className="grid grid-cols-1 md:grid-cols-4 gap-4"
+                className="grid grid-cols-1 md:grid-cols-3 gap-4"
               >
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -112,7 +120,7 @@ const Home = () => {
                     placeholder="Enter city"
                   />
                 </div>
-                <div>
+                {/* <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Pick-up Date
                   </label>
@@ -123,15 +131,16 @@ const Home = () => {
                     onChange={handleInputChange}
                     className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   />
-                </div>
+                </div> */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Return Date
+                    Brand Car
                   </label>
                   <input
-                    type="date"
-                    name="returnDate"
-                    value={searchParams.returnDate}
+                    type="text"
+                    name="brand"
+                    placeholder="Entre brand car"
+                    value={searchParams.brandCar}
                     onChange={handleInputChange}
                     className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   />
@@ -147,10 +156,9 @@ const Home = () => {
                     className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="all">All Types</option>
-                    <option value="luxury">Luxury</option>
-                    <option value="sports">Sports</option>
-                    <option value="suv">SUV</option>
-                    <option value="electric">Electric</option>
+                    {carTypes.map((type) => (
+                      <option value={type}>{type}</option>
+                    ))}
                   </select>
                 </div>
                 <div className="md:col-span-4 flex items-center space-x-2">
@@ -207,125 +215,130 @@ const Home = () => {
           }
         >
           {loading ? (
-            <div className="min-h-screen w-full flex items-center justify-center ">
+            <div className="min-h-screen w-full flex items-center justify-center">
               <div className="flex flex-col items-center">
                 <Riple color="#18a1fe" size="large" text="" textColor="" />
               </div>
             </div>
           ) : (
-            users &&
-            users.map((user) =>
-              user.cars.map((car) => (
-                <div
-                  key={user.id}
-                  className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow"
-                >
-                  <div className="relative h-48 overflow-hidden">
+            filterCars &&
+            filterCars.map((car) => (
+              <div
+                key={car.id}
+                className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+              >
+                <div className="relative h-48 overflow-hidden">
+                  {car.car.images.length > 0 && (
                     <img
-                      src={car.images[0]}
-                      alt={car.make}
+                      src={car.car.images[0]}
+                      alt={`${car.car.make} ${car.car.model}`}
                       className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
                     />
-                    <div
-                      className={`absolute top-4 right-4 px-3 py-1 rounded-full text-sm ${
-                        car.available
-                          ? "bg-green-500 text-white"
-                          : "bg-red-500 text-white"
-                      }`}
-                    >
-                      {car.available ? "available" : "reserved"}
-                    </div>
-                  </div>
-                  <div className="p-6">
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h3 className="text-xl font-semibold mb-1">
-                          {car.make} {car.model}
-                        </h3>
-                        <span className="inline-block bg-gray-100 text-gray-800 text-sm px-3 py-1 rounded-full">
-                          {car.category}
-                        </span>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-2xl font-bold text-blue-600">
-                          ${car.dailyRate}
-                        </span>
-                        <span className="text-gray-500 text-sm">/day</span>
-                        <div className="flex items-center mt-1">
-                          <User />
-                          <span className="text-sm text-gray-600 ml-1">
-                            {user.name}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
+                  )}
 
-                    {/* Specs */}
-                    <div className="mb-4">
-                      <h4 className="text-sm font-semibold text-gray-700 mb-2">
-                        Specifications
-                      </h4>
-                      <ul className="space-y-2">
-                        {car.specs.map((spec, index) => (
-                          <li
-                            key={index}
-                            className="text-gray-600 flex items-center text-sm"
-                          >
-                            <svg
-                              className="w-4 h-4 mr-2 text-blue-500"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M5 13l4 4L19 7"
-                              />
-                            </svg>
-                            {spec}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    {/* Features */}
-                    <div className="mb-4">
-                      <h4 className="text-sm font-semibold text-gray-700 mb-2">
-                        Features
-                      </h4>
-                      <div className="flex flex-wrap gap-2">
-                        {car.features.map((feature, index) => (
-                          <span
-                            key={index}
-                            className="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded-full"
-                          >
-                            {feature}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="flex space-x-2">
-                      <Link
-                        to={`/booking/${car.id}`}
-                        onClick={CheckUserIn}
-                        className="flex-1 bg-blue-600 text-white text-center py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                      >
-                        Book Now
-                      </Link>
-                      <button
-                        onClick={CheckUserIn}
-                        className="flex-1 bg-gray-100 text-gray-800 py-2 rounded-lg hover:bg-gray-200 transition-colors"
-                      >
-                        View Details
-                      </button>
-                    </div>
+                  <div
+                    className={`absolute top-4 right-4 px-3 py-1 rounded-full text-sm ${
+                      car.car.available
+                        ? "bg-green-500 text-white"
+                        : "bg-red-500 text-white"
+                    }`}
+                  >
+                    {car.car.available ? "available" : "reserved"}
                   </div>
                 </div>
-              ))
-            )
+                <div className="p-6">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h3 className="text-xl font-semibold mb-1">
+                        {car.car.make} {car.car.model}
+                      </h3>
+                      <span className="inline-block bg-gray-100 text-gray-800 text-sm px-3 py-1 rounded-full">
+                        {car.car.category}
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-2xl font-bold text-blue-600">
+                        ${car.car.dailyRate}
+                      </span>
+                      <span className="text-gray-500 text-sm">/day</span>
+                      <div className="flex items-center mt-1">
+                        <User />
+                        <span className="text-sm text-gray-600 ml-1">
+                          {/* Display the owner's name from the user object */}
+                          {filterCars.username}
+                          {/* {members.find((member) =>
+                            member.cars.some((c) => c.id === car.id)
+                          )?.name || "Unknown Owner"} */}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Specs */}
+                  <div className="mb-4">
+                    <h4 className="text-sm font-semibold text-gray-700 mb-2">
+                      Specifications
+                    </h4>
+                    <ul className="space-y-2">
+                      {car.car.specs.map((spec, index) => (
+                        <li
+                          key={index}
+                          className="text-gray-600 flex items-center text-sm"
+                        >
+                          <svg
+                            className="w-4 h-4 mr-2 text-blue-500"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                          {spec}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Features */}
+                  <div className="mb-4">
+                    <h4 className="text-sm font-semibold text-gray-700 mb-2">
+                      Features
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {car.car.features.map((feature, index) => (
+                        <span
+                          key={index}
+                          className="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded-full"
+                        >
+                          {feature}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex space-x-2">
+                    <Link
+                      to={`/booking/${car.id}`}
+                      onClick={CheckUserIn}
+                      className="flex-1 bg-blue-600 text-white text-center py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      Book Now
+                    </Link>
+                    <button
+                      onClick={CheckUserIn}
+                      className="flex-1 bg-gray-100 text-gray-800 py-2 rounded-lg hover:bg-gray-200 transition-colors"
+                    >
+                      View Details
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))
           )}
         </div>
       </div>

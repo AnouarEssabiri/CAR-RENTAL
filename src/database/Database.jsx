@@ -20,6 +20,9 @@ export const upgradeDatabase = (event) => {
   if (!db.objectStoreNames.contains("bookings")) {
     db.createObjectStore("bookings", { keyPath: "id", autoIncrement: true });
   }
+  if (!db.objectStoreNames.contains("members")) {
+    db.createObjectStore("members", { keyPath: "id", autoIncrement: true });
+  }
 };
 
 export const addBook = (db, booking) => {
@@ -39,6 +42,38 @@ export const addBook = (db, booking) => {
     console.error("Add error:", event.target.errorCode);
   };
 };
+export const addMember = (db, member) => {
+  if (!db) {
+    console.error("Database is not initialized");
+    return;
+  }
+
+  const transaction = db.transaction(["members"], "readwrite");
+  const store = transaction.objectStore("members");
+
+  const getRequest = store.get(member.email);
+
+  getRequest.onsuccess = () => {
+    if (getRequest.result) {
+      console.error("Member already exists with email:", member.email);
+      return;
+    }
+
+    const addRequest = store.add({ ...member, cars: [] });
+
+    addRequest.onsuccess = () => {
+      console.log("Member added successfully!");
+    };
+
+    addRequest.onerror = () => {
+      console.error("Error adding member:", addRequest.error);
+    };
+  };
+
+  getRequest.onerror = () => {
+    console.error("Error checking existing member:", getRequest.error);
+  };
+};
 
 export const addUser = (db, user) => {
   if (!db) {
@@ -56,6 +91,48 @@ export const addUser = (db, user) => {
   request.onerror = (event) => {
     console.error("Add error:", event.target.errorCode);
   };
+};
+export const addCar = (db, memberId, newCar) => {
+  if (!db) {
+    console.error("Database is not initialized");
+    return;
+  }
+  try {
+    const transaction = db.transaction(["members"], "readwrite");
+    const store = transaction.objectStore("members");
+
+    const getMemberRequest = store.get(memberId);
+
+    getMemberRequest.onsuccess = () => {
+      const member = getMemberRequest.result;
+
+      if (member) {
+        if (!member.cars) {
+          member.cars = [];
+        }
+
+        member.cars.push(newCar);
+
+        const updateRequest = store.put(member);
+
+        updateRequest.onsuccess = () => {
+          console.log("Car added successfully to member!");
+        };
+
+        updateRequest.onerror = () => {
+          console.log("Error updating member");
+        };
+      } else {
+        console.log("Member not found");
+      }
+    };
+
+    getMemberRequest.onerror = () => {
+      console.log("Error fetching member");
+    };
+  } catch (error) {
+    console.error("Error adding car to member:", error);
+  }
 };
 export const getBookings = (db, callback) => {
   if (!db) {
@@ -88,6 +165,23 @@ export const getAllUsers = (db, callback) => {
 
   request.onerror = (event) => {
     console.error("Get all users error:", event.target.errorCode);
+  };
+};
+export const getMembers = (db, callback) => {
+  if (!db) {
+    console.error("Database is not initialized");
+    return;
+  }
+  const transaction = db.transaction(["members"], "readonly");
+  const store = transaction.objectStore("members");
+  const request = store.getAll();
+
+  request.onsuccess = (event) => {
+    callback(event.target.result);
+  };
+
+  request.onerror = (event) => {
+    console.error("Get all members error:", event.target.errorCode);
   };
 };
 export const getAllLocations = (db, callback) => {
@@ -138,7 +232,7 @@ export const UpdateBook = (db, id, status) => {
     getRequest.onsuccess = (event) => {
       const booking = event.target.result;
       if (booking) {
-        booking.status = status; 
+        booking.status = status;
         const updateRequest = objectStore.put(booking);
 
         updateRequest.onsuccess = () => {
