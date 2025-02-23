@@ -3,21 +3,48 @@ import { ChevronDown, ChevronUp, Search, Filter } from "lucide-react";
 import Sidebar from "../components/layout/Sidebar";
 import useDatabase from "../hooks/useDatabase";
 import NoRequestsMessage from "../components/ui/NoRequest";
+import { UpdateBook } from "../database/Database";
+import { useNavigate } from "react-router-dom";
 
 const ValidateBooking = () => {
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [filterStatus, setFilterStatus] = useState("all");
   const [requests, setRequests] = useState();
-  const { bookings } = useDatabase();
-  const hasFetched = useRef(false);
+  const { db, bookings } = useDatabase();
+  const navigate  = useNavigate();
+  // const hasFetched = useRef(false);
   console.log(bookings);
   useEffect(() => {
-    if (hasFetched.current) return; // Prevent second execution
-    hasFetched.current = true;
+    // if (hasFetched.current) return;
+    // hasFetched.current = true;
     setRequests(bookings);
   }, [bookings]);
   console.log(requests);
 
+  const acceptRequest = (id) => {
+    UpdateBook(db, id, "approved")
+    navigate("/dashboard")
+      .then(() => {
+        console.log(`Booking ${id} accepted successfully.`);
+        // Optionally, refresh the bookings list or update state
+      })
+      .catch((error) => {
+        console.error("Error accepting booking:", error);
+      });
+  };
+
+  // Function to handle rejecting a booking
+  const rejectRequest = (id) => {
+    UpdateBook(db, id, "declined")
+    navigate("/dashboard")
+      .then(() => {
+        console.log(`Booking ${id} rejected successfully.`);
+        // Optionally, refresh the bookings list or update state
+      })
+      .catch((error) => {
+        console.error("Error rejecting booking:", error);
+      });
+  };
   // Sample data - in real app this would come from props or API
   const books = [
     {
@@ -72,14 +99,13 @@ const ValidateBooking = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <h3 className="text-lg font-semibold">Booking {book.id}</h3>
-                {/* <span
+                <span
                   className={`px-2 py-1 rounded-full text-sm ${
                     statusColors[book.status]
                   }`}
                 >
-                  {book.status.charAt(0).toUpperCase() +
-                    book.status.slice(1)}
-                </span> */}
+                  {book.status.charAt(0).toUpperCase() + book.status.slice(1)}
+                </span>
               </div>
               {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
             </div>
@@ -121,10 +147,16 @@ const ValidateBooking = () => {
 
               {book.status === "pending" && (
                 <div className="flex gap-4 mt-6">
-                  <button className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-all">
+                  <button
+                    onClick={() => acceptRequest(book.id)}
+                    className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-all"
+                  >
                     Accept
                   </button>
-                  <button className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition-all">
+                  <button
+                    onClick={() => rejectRequest(book.id)}
+                    className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition-all"
+                  >
                     Decline
                   </button>
                 </div>
@@ -190,7 +222,9 @@ const ValidateBooking = () => {
                     }
                   />
                 ))
-            ) : <NoRequestsMessage />}
+            ) : (
+              <NoRequestsMessage />
+            )}
           </div>
         </div>
       </div>

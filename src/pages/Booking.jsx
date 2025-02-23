@@ -17,6 +17,7 @@ const Booking = () => {
     status: "pending",
     car: null,
     total: 0,
+    username: null,
     userEmail: null,
     phone: "",
   });
@@ -88,6 +89,7 @@ const Booking = () => {
       car: fCar,
       status: "pending",
       total,
+      username: user?.displayName,
       userEmail: user?.email,
       phone,
     }));
@@ -112,7 +114,7 @@ const Booking = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <div className="flex flex-col items-center">
-          <Riple color="#18a1fe" size="large" text="" textColor="" />
+          <Riple color="#18a1fe" size="large"  />
         </div>
       </div>
     );
@@ -282,8 +284,7 @@ const Booking = () => {
                     </label>
                     <input
                       type="text"
-                      value={fCar.car?.phone}
-                      placeholder="06 00 00 00 00"
+                      placeholder={fCar.phone || "Enter your phone number"}
                       onChange={(e) => setPhone(e.target.value)}
                       className="w-full px-4 py-3 rounded-lg border border-gray-300"
                       required

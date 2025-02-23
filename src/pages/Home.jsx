@@ -37,11 +37,20 @@ const Home = () => {
       setLoading(false);
     }
   }, [members]);
+
   useEffect(() => {
-    ChoseCategory("all");
-  }, []);
+    setLoading(true);
+
+    if (Array.isArray(members)) {
+      ChoseCategory("all");
+      // setFilterCars(members.flatMap((member) => member.cars));
+      setLoading(false);
+    } else {
+      console.error("members is not an array:", members);
+    }
+  }, [members]);
+
   const ChoseCategory = (type) => {
-    // Check if members is an array
     if (Array.isArray(members)) {
       if (type === "all") {
         setFilterCars(members.flatMap((member) => member.cars));
@@ -55,7 +64,6 @@ const Home = () => {
       console.error("members is not an array:", members);
     }
   };
-  
 
   console.log(filterCars);
   console.log(members);
@@ -222,123 +230,125 @@ const Home = () => {
             </div>
           ) : (
             filterCars &&
-            filterCars.map((car) => (
-              <div
-                key={car.id}
-                className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow"
-              >
-                <div className="relative h-48 overflow-hidden">
-                  {car.car.images.length > 0 && (
-                    <img
-                      src={car.car.images[0]}
-                      alt={`${car.car.make} ${car.car.model}`}
-                      className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
-                    />
-                  )}
+            members.map((member) =>
+              filterCars.map((car) => (
+                <div
+                  key={car.id}
+                  className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+                >
+                  <div className="relative h-48 overflow-hidden">
+                    {car.car.images.length > 0 && (
+                      <img
+                        src={car.car.images[0]}
+                        alt={`${car.car.make} ${car.car.model}`}
+                        className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
+                      />
+                    )}
 
-                  <div
-                    className={`absolute top-4 right-4 px-3 py-1 rounded-full text-sm ${
-                      car.car.available
-                        ? "bg-green-500 text-white"
-                        : "bg-red-500 text-white"
-                    }`}
-                  >
-                    {car.car.available ? "available" : "reserved"}
-                  </div>
-                </div>
-                <div className="p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 className="text-xl font-semibold mb-1">
-                        {car.car.make} {car.car.model}
-                      </h3>
-                      <span className="inline-block bg-gray-100 text-gray-800 text-sm px-3 py-1 rounded-full">
-                        {car.car.category}
-                      </span>
+                    <div
+                      className={`absolute top-4 right-4 px-3 py-1 rounded-full text-sm ${
+                        car.car.available
+                          ? "bg-green-500 text-white"
+                          : "bg-red-500 text-white"
+                      }`}
+                    >
+                      {car.car.available ? "available" : "reserved"}
                     </div>
-                    <div className="text-right">
-                      <span className="text-2xl font-bold text-blue-600">
-                        ${car.car.dailyRate}
-                      </span>
-                      <span className="text-gray-500 text-sm">/day</span>
-                      <div className="flex items-center mt-1">
-                        <User />
-                        <span className="text-sm text-gray-600 ml-1">
-                          {/* Display the owner's name from the user object */}
-                          {filterCars.username}
-                          {/* {members.find((member) =>
-                            member.cars.some((c) => c.id === car.id)
-                          )?.name || "Unknown Owner"} */}
+                  </div>
+                  <div className="p-6">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h3 className="text-xl font-semibold mb-1">
+                          {car.car.make} {car.car.model}
+                        </h3>
+                        <span className="inline-block bg-gray-100 text-gray-800 text-sm px-3 py-1 rounded-full">
+                          {car.car.category}
                         </span>
                       </div>
-                    </div>
-                  </div>
-
-                  {/* Specs */}
-                  <div className="mb-4">
-                    <h4 className="text-sm font-semibold text-gray-700 mb-2">
-                      Specifications
-                    </h4>
-                    <ul className="space-y-2">
-                      {car.car.specs.map((spec, index) => (
-                        <li
-                          key={index}
-                          className="text-gray-600 flex items-center text-sm"
-                        >
-                          <svg
-                            className="w-4 h-4 mr-2 text-blue-500"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M5 13l4 4L19 7"
-                            />
-                          </svg>
-                          {spec}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {/* Features */}
-                  <div className="mb-4">
-                    <h4 className="text-sm font-semibold text-gray-700 mb-2">
-                      Features
-                    </h4>
-                    <div className="flex flex-wrap gap-2">
-                      {car.car.features.map((feature, index) => (
-                        <span
-                          key={index}
-                          className="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded-full"
-                        >
-                          {feature}
+                      <div className="text-right">
+                        <span className="text-2xl font-bold text-blue-600">
+                          ${car.car.dailyRate}
                         </span>
-                      ))}
+                        <span className="text-gray-500 text-sm">/day</span>
+                        <div className="flex items-center mt-1">
+                          <User />
+                          <span className="text-sm text-gray-600 ml-1">
+                            {/* Display the owner's name from the user object */}
+                            {member.username}
+                            {/* {members.find((member) =>
+                            member.cars.some((c) => c.id === car.id)
+                          )?.name || "Unknown Owner"} */}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="flex space-x-2">
-                    <Link
-                      to={`/booking/${car.id}`}
-                      onClick={CheckUserIn}
-                      className="flex-1 bg-blue-600 text-white text-center py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                      Book Now
-                    </Link>
-                    <button
-                      onClick={CheckUserIn}
-                      className="flex-1 bg-gray-100 text-gray-800 py-2 rounded-lg hover:bg-gray-200 transition-colors"
-                    >
-                      View Details
-                    </button>
+                    {/* Specs */}
+                    <div className="mb-4">
+                      <h4 className="text-sm font-semibold text-gray-700 mb-2">
+                        Specifications
+                      </h4>
+                      <ul className="space-y-2">
+                        {car.car.specs.map((spec, index) => (
+                          <li
+                            key={index}
+                            className="text-gray-600 flex items-center text-sm"
+                          >
+                            <svg
+                              className="w-4 h-4 mr-2 text-blue-500"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M5 13l4 4L19 7"
+                              />
+                            </svg>
+                            {spec}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* Features */}
+                    <div className="mb-4">
+                      <h4 className="text-sm font-semibold text-gray-700 mb-2">
+                        Features
+                      </h4>
+                      <div className="flex flex-wrap gap-2">
+                        {car.car.features.map((feature, index) => (
+                          <span
+                            key={index}
+                            className="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded-full"
+                          >
+                            {feature}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex space-x-2">
+                      <Link
+                        to={`/booking/${car.id}`}
+                        onClick={CheckUserIn}
+                        className="flex-1 bg-blue-600 text-white text-center py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                      >
+                        Book Now
+                      </Link>
+                      <button
+                        onClick={CheckUserIn}
+                        className="flex-1 bg-gray-100 text-gray-800 py-2 rounded-lg hover:bg-gray-200 transition-colors"
+                      >
+                        View Details
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))
+              ))
+            )
           )}
         </div>
       </div>

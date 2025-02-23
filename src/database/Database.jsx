@@ -252,3 +252,44 @@ export const UpdateBook = (db, id, status) => {
     };
   });
 };
+export function removeCarFromMember(db, memberId, carId) {
+  if (!db) {
+    console.error("Database is not initialized");
+    return;
+  }
+  const transaction = db.transaction(["members"], "readwrite");
+  const store = transaction.objectStore("members");
+  let getRequest = store.get(memberId);
+
+  getRequest.onsuccess = function (event) {
+    let member = event.target.result;
+
+    if (member) {
+      if (Array.isArray(member.cars)) {
+        let updatedCars = member.cars.filter((car) => car.id !== carId);
+
+        if (updatedCars.length === member.cars.length) {
+          console.log(
+            `Car with ID '${carId}' not found for member '${memberId}'.`
+          );
+          return;
+        }
+
+        member.cars = updatedCars;
+        store.put(member);
+
+        console.log(
+          `Car with ID '${carId}' removed from member '${memberId}'.`
+        );
+      } else {
+        console.log(`Member '${memberId}' does not have a valid 'cars' array.`);
+      }
+    } else {
+      console.log(`Member with ID '${memberId}' not found.`);
+    }
+  };
+
+  getRequest.onerror = function () {
+    console.error("Error fetching the member record.");
+  };
+}
