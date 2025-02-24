@@ -16,42 +16,66 @@ const useDatabase = () => {
   const [bookings, setBookings] = useState([]);
   const [cars, setCars] = useState([]);
   const [members, setMembers] = useState({});
+
   useEffect(() => {
-    openDatabase("MyDatabase", 1, upgradeDatabase, (event) => {
-      setDb(event.target.result);
+    let isMounted = true; // Flag to track if the component is still mounted
+
+    const handleDatabaseOpen = (event) => {
+      if (!isMounted) return; // Avoid state updates if the component is unmounted
+
+      const database = event.target.result;
+      setDb(database);
       console.log("Database opened successfully");
-      fetchUsers(event.target.result); // Fetch users when the database is opened successfully
-      fetchLocations(event.target.result); // Fetch locations when the database is opened successfully
-      fetchBookings(event.target.result);
-      fetchCars(event.target.result);
-      fetchMemebrs(event.target.result);
-    });
-  }, []);
+
+      // Fetch data only if the component is still mounted
+      if (isMounted) {
+        fetchUsers(database);
+        fetchLocations(database);
+        fetchBookings(database);
+        fetchCars(database);
+        fetchMembers(database);
+      }
+    };
+
+    openDatabase("MyDatabase", 1, upgradeDatabase, handleDatabaseOpen);
+
+    // Cleanup function to avoid state updates after unmount
+    return () => {
+      isMounted = false;
+    };
+  }, []); // Empty dependency array ensures this runs only once
+
   const fetchUsers = (db) => {
     getAllUsers(db, (users) => {
       setUsers(users);
     });
   };
+
   const fetchLocations = (db) => {
     getAllLocations(db, (locations) => {
       setLocations(locations);
     });
   };
+
   const fetchBookings = (db) => {
     getBookings(db, (bookings) => {
       setBookings(bookings);
     });
   };
+
   const fetchCars = (db) => {
     getAllCars(db, (cars) => {
       setCars(cars);
     });
   };
-  const fetchMemebrs = (db) => {
+
+  const fetchMembers = (db) => {
     getMembers(db, (members) => {
       setMembers(members);
     });
   };
+
   return { db, users, locations, bookings, cars, members };
 };
+
 export default useDatabase;

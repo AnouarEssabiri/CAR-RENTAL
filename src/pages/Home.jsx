@@ -90,6 +90,15 @@ const Home = () => {
       <Header />
       {/* Hero Section */}
       <div className="relative h-[600px] mb-12">
+        {showMap && (
+          <button
+            onClick={DisplayMap}
+            className="absolute z-50  top-4 p-4 rounded-lg right-2 bg-red-600"
+          >
+            close
+          </button>
+        )}
+
         <div className="absolute inset-0">
           <img
             src="https://images.unsplash.com/photo-1503376780353-7e6692767b70"
@@ -225,7 +234,7 @@ const Home = () => {
           {loading ? (
             <div className="min-h-screen w-full flex items-center justify-center">
               <div className="flex flex-col items-center">
-                <Riple color="#18a1fe" size="large" text="" textColor="" />
+                <Riple color="#18a1fe" size="large" />
               </div>
             </div>
           ) : (

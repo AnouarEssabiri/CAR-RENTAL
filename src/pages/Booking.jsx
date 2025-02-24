@@ -28,7 +28,7 @@ const Booking = () => {
   const [returnDate, setReturnDate] = useState("");
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(true);
-  const [fCar, setFCar] = useState(null);
+  const [cars, setCars] = useState(null);
   const [daysDifference, setDaysDifference] = useState(1);
   const [total, setTotal] = useState(0);
 
@@ -68,17 +68,17 @@ const Booking = () => {
       const foundCar = members
         .flatMap((member) => member.cars)
         .find((car) => parseInt(car.id) === parseInt(CarId));
-      setFCar(foundCar);
+        setCars(foundCar);
       setLoading(false);
     }
   }, [CarId, members]);
 
   useEffect(() => {
-    if (fCar && daysDifference > 0) {
-      const totalCost = fCar.car?.dailyRate * daysDifference;
+    if (cars && daysDifference > 0) {
+      const totalCost = cars.car?.dailyRate * daysDifference;
       setTotal(totalCost);
     }
-  }, [fCar, daysDifference]);
+  }, [cars, daysDifference]);
 
   // Update bookData whenever relevant data changes
   useEffect(() => {
@@ -86,18 +86,18 @@ const Booking = () => {
       ...prev,
       pickupDate,
       returnDate,
-      car: fCar,
+      cars,
       status: "pending",
       total,
       username: user?.displayName,
       userEmail: user?.email,
       phone,
     }));
-  }, [pickupDate, returnDate, fCar, total]);
+  }, [pickupDate, returnDate, cars, total]);
 
   // Handle booking confirmation
   const handleConfirmBooking = () => {
-    if (!pickupDate || !returnDate || !fCar || total <= 0) {
+    if (!pickupDate || !returnDate || !cars || total <= 0) {
       toast.error(
         "Please fill all required fields and ensure the total is valid."
       );
@@ -121,7 +121,7 @@ const Booking = () => {
   }
 
   // Show error if car is not found
-  if (!fCar) {
+  if (!cars) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <div className="text-lg font-semibold text-red-600">Car not found!</div>
@@ -138,10 +138,10 @@ const Booking = () => {
           {/* Car Details Header */}
           <div className="mb-12">
             <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              {fCar.car.make} {fCar.car?.model} {fCar?.car.year}
+              {cars.car.make} {cars.car?.model} {cars?.car.year}
             </h1>
             <div className="flex items-center space-x-4 text-gray-600">
-              {/* fCar.specs.map() */}
+              {/* cars.specs.map() */}
               <span className="flex items-center">
                 <svg
                   className="w-5 h-5 mr-1 text-blue-500"
@@ -195,12 +195,12 @@ const Booking = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Car Image Gallery */}
-            {fCar.car.images.map((image, index) => (
+            {cars.car.images.map((image, index) => (
               <div key={index} className="space-y-6">
                 <div className="aspect-w-16 aspect-h-9 rounded-3xl overflow-hidden shadow-xl">
                   <img
                     src={image}
-                    alt={`${fCar.car?.make} ${fCar.car?.model}`}
+                    alt={`${cars.car?.make} ${cars.car?.model}`}
                     className="w-full h-[500px] object-cover"
                   />
                 </div>
@@ -208,7 +208,7 @@ const Booking = () => {
                   <div className="aspect-video rounded-xl overflow-hidden shadow-sm cursor-pointer">
                     <img
                       src={image}
-                      alt={`${fCar.car?.make} ${fCar.car?.model}`}
+                      alt={`${cars.car?.make} ${cars.car?.model}`}
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -223,7 +223,7 @@ const Booking = () => {
                 <div className="border-b pb-6">
                   <div className="flex items-baseline space-x-2">
                     <span className="text-3xl font-bold text-blue-600">
-                      ${fCar.car?.dailyRate}
+                      ${cars.car?.dailyRate}
                     </span>
                     <span className="text-gray-500">/ day</span>
                   </div>
@@ -261,7 +261,7 @@ const Booking = () => {
                     </label>
                     <input
                       type="text"
-                      value={fCar.car?.city}
+                      value={cars.car?.city}
                       readOnly
                       className="w-full px-4 py-3 rounded-lg border border-gray-300"
                     />
@@ -273,7 +273,7 @@ const Booking = () => {
                     </label>
                     <input
                       type="text"
-                      value={fCar.car?.city}
+                      value={cars.car?.city}
                       readOnly
                       className="w-full px-4 py-3 rounded-lg border border-gray-300"
                     />
@@ -284,7 +284,7 @@ const Booking = () => {
                     </label>
                     <input
                       type="text"
-                      placeholder={fCar.phone || "Enter your phone number"}
+                      placeholder={cars.phone || "Enter your phone number"}
                       onChange={(e) => setPhone(e.target.value)}
                       className="w-full px-4 py-3 rounded-lg border border-gray-300"
                       required
@@ -297,11 +297,11 @@ const Booking = () => {
                   <div className="space-y-4">
                     <div className="flex justify-between">
                       <span className="text-gray-600">Daily Price</span>
-                      <span className="font-medium">${fCar.car?.dailyRate}</span>
+                      <span className="font-medium">${cars.car?.dailyRate}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">
-                        ${fCar.car?.dailyRate} ×{" "}
+                        ${cars.car?.dailyRate} ×{" "}
                         {daysDifference === 1
                           ? `${daysDifference} day`
                           : `${daysDifference} days`}

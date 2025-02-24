@@ -3,29 +3,30 @@ import useDatabase from "../hooks/useDatabase";
 import Sidebar from "../components/layout/Sidebar.jsx";
 import { Riple } from "react-loading-indicators";
 import { Link } from "react-router-dom";
+import { removeCarFromMember } from "../database/Database.jsx";
 
 const ListMyCars = () => {
-  const { members } = useDatabase(); // Destructure members from useDatabase
+  const { members, db } = useDatabase();
   const [loading, setLoading] = useState(true);
-  const [myCars, setMyCars] = useState([]); // State to store the logged-in member's cars
+  const [myCars, setMyCars] = useState([]);
+  const [memberID, setMemberID] = useState(null);
 
   useEffect(() => {
-    // Retrieve member data from localStorage
     const memberData = JSON.parse(localStorage.getItem("member"));
     if (memberData && members.length > 0) {
-      // Find the member whose ID matches the one in localStorage
       const loggedInMember = members.find(
         (member) => member.id === memberData.id
       );
+      setMemberID(memberData.id);
 
       if (loggedInMember) {
-        // Set the cars of the logged-in member
         setMyCars(loggedInMember.cars);
       }
 
-      setLoading(false); // Data is ready
+      setLoading(false);
     }
-  }, [members]); // Re-run when members data changes
+  }, [members]);
+
 
   return (
     <>
@@ -42,7 +43,10 @@ const ListMyCars = () => {
                 Manage your rental vehicles and view performance metrics
               </p>
             </div>
-            <Link to="/RentMyCar" className="mt-4 md:mt-0 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg flex items-center">
+            <Link
+              to="/RentMyCar"
+              className="mt-4 md:mt-0 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg flex items-center"
+            >
               <svg
                 className="w-5 h-5 mr-2"
                 fill="none"
@@ -206,7 +210,10 @@ const ListMyCars = () => {
                           </svg>
                           Edit
                         </button>
-                        <button className="text-red-600 hover:text-red-700 flex items-center">
+                        <button
+                          onClick={() => removeCarFromMember(db, memberID, car.id)}
+                          className="text-red-600 hover:text-red-700 flex items-center"
+                        >
                           <svg
                             className="w-5 h-5 mr-2"
                             fill="none"
