@@ -93,7 +93,7 @@ const Home = () => {
         {showMap && (
           <button
             onClick={DisplayMap}
-            className="absolute z-50  top-4 p-4 rounded-lg right-2 bg-red-600"
+            className="fixed z-50  top-15 p-4 rounded-lg right-2 bg-red-600"
           >
             close
           </button>

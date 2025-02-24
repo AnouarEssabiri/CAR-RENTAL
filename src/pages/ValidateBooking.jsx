@@ -17,6 +17,9 @@ const ValidateBooking = () => {
   const navigate = useNavigate();
   // const hasFetched = useRef(false);
   console.log(bookings);
+  // if (searchQuery.trim() !== ""){
+  //   setRequests(request)
+  // }
   useEffect(() => {
     if (searchQuery.trim() !== "") {
       setRequests(request);
@@ -81,7 +84,7 @@ const ValidateBooking = () => {
           </div>
           <div>
             <p className="text-sm text-gray-600">Car</p>
-            <p className="font-medium">{booking.car.make}</p>
+            <p className="font-medium">{booking.car?.make}</p>
           </div>
           <div>
             <p className="text-sm text-gray-600">Pickup</p>
@@ -144,7 +147,7 @@ const ValidateBooking = () => {
                 />
                 <input
                   type="text"
-                  value={searchQuery}
+                  // value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search bookings..."
                   className="pl-10 pr-4 py-2 border rounded-lg"

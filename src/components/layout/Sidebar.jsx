@@ -19,7 +19,7 @@ const Sidebar = (props) => {
       {/* Sidebar */}
       <div className="bg-gray-900 text-white w-64 min-h-screen p-6 fixed">
         <div className="mb-8">
-          <h2 className="text-2xl font-bold">Luxury Rentals</h2>
+          <h2 className="text-2xl font-bold">RideNow</h2>
           <p className="text-gray-400 text-sm">{props.active}</p>
         </div>
 
