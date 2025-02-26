@@ -484,7 +484,7 @@ const Home = () => {
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="text-gray-400 hover:text-white">
+                  <a href="/Member_login" className="text-gray-400 hover:text-white">
                     Become a Member
                   </a>
                 </li>

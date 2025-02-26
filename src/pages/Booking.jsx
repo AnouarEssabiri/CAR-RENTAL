@@ -10,16 +10,14 @@ import Header from "../components/layout/Header";
 
 const Booking = () => {
   const { CarId } = useParams();
-  const { db, members} = useDatabase();
+  const { db, members, users} = useDatabase();
   const [bookData, setBookData] = useState({
     pickupDate: "",
     returnDate: "",
     status: "pending",
-    car: null,
     total: 0,
     username: null,
     userEmail: null,
-    phone: "",
   });
   const user = useAuth();
   console.log(user?.email);
@@ -28,6 +26,7 @@ const Booking = () => {
   const [returnDate, setReturnDate] = useState("");
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(true);
+  const [getUsers, setUsers] = useState(null);
   const [cars, setCars] = useState(null);
   const [daysDifference, setDaysDifference] = useState(1);
   const [total, setTotal] = useState(0);
@@ -64,11 +63,12 @@ const Booking = () => {
   };
 
   useEffect(() => {
-    if (members.length > 0) {
+    if (members.length > 0 &&  users.length > 0) {
       const foundCar = members
         .flatMap((member) => member.cars)
         .find((car) => parseInt(car.id) === parseInt(CarId));
         setCars(foundCar);
+      setUsers(users)
       setLoading(false);
     }
   }, [CarId, members]);
@@ -89,9 +89,9 @@ const Booking = () => {
       cars,
       status: "pending",
       total,
-      username: user?.displayName,
-      userEmail: user?.email,
-      phone,
+      username: user?.displayName || users[0]?.username,
+      userEmail: user?.email || users[0]?.email,
+      phone: phone || users[0]?.phoneNumber,
     }));
   }, [pickupDate, returnDate, cars, total]);
 
@@ -119,6 +119,10 @@ const Booking = () => {
       </div>
     );
   }
+  console.log(getUsers);
+  console.log(getUsers[0].phoneNumber);
+  console.log(users);
+  console.log(users[0].phoneNumber)
 
   // Show error if car is not found
   if (!cars) {
@@ -284,7 +288,7 @@ const Booking = () => {
                     </label>
                     <input
                       type="text"
-                      placeholder={cars.phone || "Enter your phone number"}
+                      placeholder={users[0].phoneNumber}
                       onChange={(e) => setPhone(e.target.value)}
                       className="w-full px-4 py-3 rounded-lg border border-gray-300"
                       required
